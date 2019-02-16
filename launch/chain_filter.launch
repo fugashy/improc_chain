@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input_topic" default="image_raw"/>
+  <arg name="default_chain_num" default="3"/>
+  <node name="chain_filter_node" pkg="image_proc_chain" type="image_proc_chain_node">
+     <param name="input_topic" value="$(arg input_topic)" />
+     <param name="default_chain_num" value="$(arg default_chain_num)" />
+  </node>
+</launch>

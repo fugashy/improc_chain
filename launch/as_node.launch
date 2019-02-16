@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input_topic" default="image_raw"/>
+  <node name="filter_node" pkg="nodelet" type="nodelet"
+        args="standalone image_proc_chain/Nodelet">
+     <remap from="camera/image_raw" to="$(arg input_topic)" />
+  </node>
+</launch>
