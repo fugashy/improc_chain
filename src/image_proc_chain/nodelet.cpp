@@ -3,7 +3,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "image_proc_chain/factory.hpp"
+#include "image_proc_chain/processor_factory.hpp"
 
 namespace image_proc_chain {
 
@@ -18,7 +18,7 @@ void Nodelet::onInit() {
   image_transport::ImageTransport its(nh);
   sub_ = its.subscribe("camera/image_raw", 1, &Nodelet::Callback, this);
 
-  filter_.reset(new DynamicChangableFilter(pnh));
+  processor_.reset(new ChangableProcessor(pnh));
 }
 
 void Nodelet::Callback(const sensor_msgs::ImageConstPtr& msg) {
@@ -31,7 +31,7 @@ void Nodelet::Callback(const sensor_msgs::ImageConstPtr& msg) {
   }
 
   cv::Mat out;
-  filter_->Through(cv_ptr->image, out);
+  processor_->Work(cv_ptr->image, out);
 
   std::string encoding;
   if (out.type() == CV_8UC1) {

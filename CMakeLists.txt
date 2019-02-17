@@ -24,7 +24,7 @@ add_service_files(
     srv
   FILES
     ChangeChainNum.srv
-    FilterType.srv)
+    ChangeProcessorType.srv)
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
@@ -47,11 +47,10 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/bilateral.cpp
   src/${PROJECT_NAME}/canny_edge.cpp
-  src/${PROJECT_NAME}/dynamic_changable_filter.cpp
-  src/${PROJECT_NAME}/factory.cpp
+  src/${PROJECT_NAME}/changable_processor.cpp
+  src/${PROJECT_NAME}/processor_factory.cpp
   src/${PROJECT_NAME}/gamma_correction.cpp
   src/${PROJECT_NAME}/gaussian.cpp
-  src/${PROJECT_NAME}/pass_through.cpp
   src/${PROJECT_NAME}/nodelet.cpp
   src/${PROJECT_NAME}/chain.cpp
 )

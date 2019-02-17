@@ -1,17 +1,17 @@
-#include "image_proc_chain/factory.hpp"
+#include "image_proc_chain/processor_factory.hpp"
 
 #include <ros/ros.h>
 
-#include "image_proc_chain/reconfiguable_filters.hpp"
+#include "image_proc_chain/reconfigurable_processors.hpp"
 
 
 namespace image_proc_chain {
 
-Interface::Ptr Factory::Create(ros::NodeHandle& nh) {
+IProcessor::Ptr ProcessorFactory::Create(ros::NodeHandle& nh) {
   std::string type;
-  nh.param<std::string>("type", type, "pass_through");
+  nh.param<std::string>("type", type, "gaussian");
 
-  Interface::Ptr ptr;
+  IProcessor::Ptr ptr;
   if (type == "gaussian") {
     ptr.reset(new Gaussian(nh));
   } else if (type == "bilateral") {
@@ -20,12 +20,11 @@ Interface::Ptr Factory::Create(ros::NodeHandle& nh) {
     ptr.reset(new CannyEdge(nh));
   } else if (type == "gamma_correction") {
     ptr.reset(new GammaCorrection(nh));
-  } else if (type == "pass_through") {
-    ptr.reset(new PassThrough(nh));
   } else {
     throw std::runtime_error("Invalid filter type.");
   }
 
+  ROS_INFO("Create %s processor.", type.c_str());
   return ptr;
 }
 

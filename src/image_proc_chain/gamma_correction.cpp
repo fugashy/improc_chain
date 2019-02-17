@@ -1,4 +1,4 @@
-#include "image_proc_chain/reconfiguable_filters.hpp"
+#include "image_proc_chain/reconfigurable_processors.hpp"
 
 #include <opencv2/imgproc.hpp>
 
@@ -20,8 +20,12 @@ GammaCorrection::GammaCorrection(ros::NodeHandle& nh) {
   server_->setCallback(f);
 }
 
-void GammaCorrection::Through(const cv::Mat& in, cv::Mat& out) {
+void GammaCorrection::Work(const cv::Mat& in, cv::Mat& out) {
   std::lock_guard<std::mutex> lock(mutex_);
+  if (!config_.enable) {
+    out = in;
+    return;
+  }
   cv::Mat tmp = in.clone();
   if (in.type() != CV_8UC1) {
     cv::cvtColor(in, tmp, CV_RGB2GRAY);
@@ -40,6 +44,8 @@ void GammaCorrection::ReconfigureCallback(GammaCorrectionConfig& config, uint32_
   for (int i = 0; i < 256; ++i) {
     head[i] = ConvertWithGC(i, config.gamma);
   }
+
+  config_ = config;
 }
 
 }

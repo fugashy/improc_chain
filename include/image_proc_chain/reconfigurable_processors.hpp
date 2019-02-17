@@ -1,6 +1,6 @@
-#ifndef IMAGE_PROC_CHAIN_RECONFIGUAGLE_FILTER_HPP_
-#define IMAGE_PROC_CHAIN_RECONFIGUAGLE_FILTER_HPP_
-#include "image_proc_chain/i_filter.hpp"
+#ifndef IMAGE_PROC_CHAIN_RECONFIGURABLE_PROCESSOR_HPP_
+#define IMAGE_PROC_CHAIN_RECONFIGURABLE_PROCESSOR_HPP_
+#include "image_proc_chain/i_processor.hpp"
 
 #include <mutex>
 
@@ -19,10 +19,10 @@ using image_proc_chain::GaussianConfig;
 
 namespace image_proc_chain {
 
-class Bilateral : public Interface {
+class Bilateral : public IProcessor {
  public:
   explicit Bilateral(ros::NodeHandle& nh);
-  virtual void Through(const cv::Mat& in, cv::Mat& out);
+  virtual void Work(const cv::Mat& in, cv::Mat& out);
 
  private:
   void ReconfigureCallback(BilateralConfig& config, uint32_t level);
@@ -32,10 +32,10 @@ class Bilateral : public Interface {
   std::mutex mutex_;
 };
 
-class CannyEdge : public Interface {
+class CannyEdge : public IProcessor {
  public:
   explicit CannyEdge(ros::NodeHandle& nh);
-  virtual void Through(const cv::Mat& in, cv::Mat& out);
+  virtual void Work(const cv::Mat& in, cv::Mat& out);
 
  private:
   void ReconfigureCallback(CannyEdgeConfig& config, uint32_t level);
@@ -45,10 +45,10 @@ class CannyEdge : public Interface {
   std::mutex mutex_;
 };
 
-class GammaCorrection : public Interface {
+class GammaCorrection : public IProcessor {
  public:
   explicit GammaCorrection(ros::NodeHandle& nh);
-  virtual void Through(const cv::Mat& in, cv::Mat& out);
+  virtual void Work(const cv::Mat& in, cv::Mat& out);
 
  private:
   void ReconfigureCallback(GammaCorrectionConfig& config, uint32_t level);
@@ -59,10 +59,10 @@ class GammaCorrection : public Interface {
   cv::Mat lut_;
 };
 
-class Gaussian : public Interface {
+class Gaussian : public IProcessor {
  public:
   explicit Gaussian(ros::NodeHandle& nh);
-  virtual void Through(const cv::Mat& in, cv::Mat& out);
+  virtual void Work(const cv::Mat& in, cv::Mat& out);
 
  private:
   void ReconfigureCallback(GaussianConfig& config, uint32_t level);
@@ -70,12 +70,6 @@ class Gaussian : public Interface {
   std::shared_ptr<dynamic_reconfigure::Server<GaussianConfig>> server_;
   GaussianConfig config_;
   std::mutex mutex_;
-};
-
-class PassThrough : public Interface {
- public:
-  explicit PassThrough(ros::NodeHandle& nh);
-  virtual void Through(const cv::Mat& in, cv::Mat& out);
 };
 
 }

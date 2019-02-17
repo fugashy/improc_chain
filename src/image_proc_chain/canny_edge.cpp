@@ -1,4 +1,4 @@
-#include "image_proc_chain/reconfiguable_filters.hpp"
+#include "image_proc_chain/reconfigurable_processors.hpp"
 
 #include <opencv2/imgproc.hpp>
 
@@ -12,8 +12,12 @@ CannyEdge::CannyEdge(ros::NodeHandle& nh) {
   server_->setCallback(f);
 }
 
-void CannyEdge::Through(const cv::Mat& in, cv::Mat& out) {
+void CannyEdge::Work(const cv::Mat& in, cv::Mat& out) {
   std::lock_guard<std::mutex> lock(mutex_);
+  if (!config_.enable) {
+    out = in;
+    return;
+  }
   cv::Mat tmp = in.clone();
   if (in.type() != CV_8UC1) {
     cv::cvtColor(in, tmp, CV_RGB2GRAY);

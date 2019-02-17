@@ -5,7 +5,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <sensor_msgs/Image.h>
 
-#include "image_proc_chain/dynamic_changable_filter.hpp"
+#include "image_proc_chain/changable_processor.hpp"
 
 namespace image_proc_chain {
 
@@ -16,7 +16,7 @@ class Nodelet : public nodelet::Nodelet {
  private:
   void Callback(const sensor_msgs::ImageConstPtr& msg);
 
-  DynamicChangableFilter::Ptr filter_;
+  ChangableProcessor::Ptr processor_;
 
   image_transport::Subscriber sub_;
   image_transport::Publisher pub_;

@@ -1,4 +1,4 @@
-#include "image_proc_chain/reconfiguable_filters.hpp"
+#include "image_proc_chain/reconfigurable_processors.hpp"
 
 #include <opencv2/imgproc.hpp>
 
@@ -12,8 +12,12 @@ Bilateral::Bilateral(ros::NodeHandle& nh) {
   server_->setCallback(f);
 }
 
-void Bilateral::Through(const cv::Mat& in, cv::Mat& out) {
+void Bilateral::Work(const cv::Mat& in, cv::Mat& out) {
   std::lock_guard<std::mutex> lock(mutex_);
+  if (!config_.enable) {
+    out = in;
+    return;
+  }
   cv::Mat tmp = in;
   for (int i = 0, iend = config_.iteration_count; i < iend; ++i) {
     cv::bilateralFilter(
