@@ -11,7 +11,7 @@ void Nodelet::onInit() {
   // Publisher
   ros::NodeHandle pnh = getPrivateNodeHandle();
   image_transport::ImageTransport itp(pnh);
-  pub_ = itp.advertise("image_filtered", 1);
+  pub_ = itp.advertise("image_processed", 1);
 
   // Subscriber
   ros::NodeHandle nh = getNodeHandle();

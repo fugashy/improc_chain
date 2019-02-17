@@ -7,7 +7,7 @@ namespace image_proc_chain {
 ChangableProcessor::ChangableProcessor(ros::NodeHandle& nh)
   : nh_(nh) {
   server_ = nh.advertiseService(
-      "change_filter", &ChangableProcessor::ChangeProcessorType, this);
+      "change_processor", &ChangableProcessor::ChangeProcessorType, this);
   processor_ = ProcessorFactory::Create(nh_);
 }
 

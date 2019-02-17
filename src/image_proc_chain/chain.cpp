@@ -5,7 +5,7 @@
 
 namespace {
 const char* const kTopicOfInput = "/camera/image_raw";
-const char* const kTopicOfFiltered = "/image_filtered";
+const char* const kTopicOfFiltered = "/image_processed";
 const char* const kNameOfNodelet = "image_proc_chain/Nodelet";
 const int kMinChainNum = 1;
 const int kMaxChainNum = 8;
