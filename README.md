@@ -14,6 +14,10 @@ Way to validate result of image process every step.
 
   <http://wiki.ros.org/nodelet>
 
+# Operation environment
+
+- Ubuntu 16.04 LTS
+- ROS kinetic 1.12.7
 
 # Processors
 
