@@ -9,13 +9,10 @@
 
 #include <image_proc_chain/BilateralConfig.h>
 #include <image_proc_chain/CannyEdgeConfig.h>
+#include <image_proc_chain/DilationConfig.h>
+#include <image_proc_chain/ErosionConfig.h>
 #include <image_proc_chain/GammaCorrectionConfig.h>
 #include <image_proc_chain/GaussianConfig.h>
-
-using image_proc_chain::BilateralConfig;
-using image_proc_chain::CannyEdgeConfig;
-using image_proc_chain::GammaCorrectionConfig;
-using image_proc_chain::GaussianConfig;
 
 namespace image_proc_chain {
 
@@ -43,6 +40,36 @@ class CannyEdge : public IProcessor {
   std::shared_ptr<dynamic_reconfigure::Server<CannyEdgeConfig>> server_;
   CannyEdgeConfig config_;
   std::mutex mutex_;
+};
+
+class Dilation : public IProcessor {
+ public:
+  explicit Dilation(ros::NodeHandle& nh);
+  virtual void Work(const cv::Mat& in, cv::Mat& out);
+
+ private:
+  void ReconfigureCallback(DilationConfig& config, uint32_t level);
+
+  std::shared_ptr<dynamic_reconfigure::Server<DilationConfig>> server_;
+  DilationConfig config_;
+  std::mutex mutex_;
+
+  cv::Mat kernel_;
+};
+
+class Erosion : public IProcessor {
+ public:
+  explicit Erosion(ros::NodeHandle& nh);
+  virtual void Work(const cv::Mat& in, cv::Mat& out);
+
+ private:
+  void ReconfigureCallback(ErosionConfig& config, uint32_t level);
+
+  std::shared_ptr<dynamic_reconfigure::Server<ErosionConfig>> server_;
+  ErosionConfig config_;
+  std::mutex mutex_;
+
+  cv::Mat kernel_;
 };
 
 class GammaCorrection : public IProcessor {

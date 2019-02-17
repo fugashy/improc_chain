@@ -21,10 +21,12 @@ Way to validate result of image process every step.
 
 # Processors
 
-  - Gaussian space filter
   - Bilateral space filter
-  - Gamma correction of gray image
   - Canny edge detection
+  - Dilation
+  - Erosion
+  - Gamma correction of gray image
+  - Gaussian space filter
 
 
 # How to use
@@ -40,3 +42,6 @@ Way to validate result of image process every step.
   ```bash
   roslaunch image_proc_chain chain_process.launch --screen input_topic:=/sensor_msgs/image/topic default_chain_num:=3
   ```
+
+  Then, you can select type of process by using ROS service.
+  Also, you can select parameter of the process by using dynamic-reconfigure.

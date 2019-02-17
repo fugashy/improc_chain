@@ -18,6 +18,10 @@ IProcessor::Ptr ProcessorFactory::Create(ros::NodeHandle& nh) {
     ptr.reset(new Bilateral(nh));
   } else if (type == "canny_edge") {
     ptr.reset(new CannyEdge(nh));
+  } else if (type == "erosion") {
+    ptr.reset(new Erosion(nh));
+  } else if (type == "dilation") {
+    ptr.reset(new Dilation(nh));
   } else if (type == "gamma_correction") {
     ptr.reset(new GammaCorrection(nh));
   } else {

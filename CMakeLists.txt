@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
 generate_dynamic_reconfigure_options(
   config/Bilateral.cfg
   config/CannyEdge.cfg
+  config/Dilation.cfg
+  config/Erosion.cfg
   config/GammaCorrection.cfg
   config/Gaussian.cfg
 )
@@ -47,12 +49,14 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/bilateral.cpp
   src/${PROJECT_NAME}/canny_edge.cpp
+  src/${PROJECT_NAME}/chain.cpp
   src/${PROJECT_NAME}/changable_processor.cpp
-  src/${PROJECT_NAME}/processor_factory.cpp
+  src/${PROJECT_NAME}/dilation.cpp
+  src/${PROJECT_NAME}/erosion.cpp
   src/${PROJECT_NAME}/gamma_correction.cpp
   src/${PROJECT_NAME}/gaussian.cpp
   src/${PROJECT_NAME}/nodelet.cpp
-  src/${PROJECT_NAME}/chain.cpp
+  src/${PROJECT_NAME}/processor_factory.cpp
 )
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
