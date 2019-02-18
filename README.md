@@ -19,6 +19,10 @@ Way to validate result of image process every step.
 - Ubuntu 16.04 LTS
 - ROS kinetic 1.12.7
 
+# Overview
+
+![overview](https://github.com/fugashy/image_proc_chain/blob/images/overview.png)
+
 # Processors
 
   - Bilateral space filter
