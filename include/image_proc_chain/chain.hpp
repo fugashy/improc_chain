@@ -19,6 +19,8 @@ class Chain {
 
   std::shared_ptr<nodelet::Loader> manager_;
   ros::ServiceServer server_;
+
+  std::string input_topic_;
 };
 
 }

@@ -9,12 +9,12 @@ namespace image_proc_chain {
 
 void Nodelet::onInit() {
   // Publisher
-  ros::NodeHandle pnh = getPrivateNodeHandle();
+  ros::NodeHandle pnh = getMTPrivateNodeHandle();
   image_transport::ImageTransport itp(pnh);
   pub_ = itp.advertise("image_processed", 1);
 
   // Subscriber
-  ros::NodeHandle nh = getNodeHandle();
+  ros::NodeHandle nh = getMTNodeHandle();
   image_transport::ImageTransport its(nh);
   sub_ = its.subscribe("camera/image_raw", 1, &Nodelet::Callback, this);
 

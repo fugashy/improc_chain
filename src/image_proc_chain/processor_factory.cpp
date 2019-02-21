@@ -28,7 +28,7 @@ IProcessor::Ptr ProcessorFactory::Create(ros::NodeHandle& nh) {
     throw std::runtime_error("Invalid filter type.");
   }
 
-  ROS_INFO("Create %s processor.", type.c_str());
+  ROS_DEBUG("Create %s processor.", type.c_str());
   return ptr;
 }
 
