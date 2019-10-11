@@ -1,8 +1,0 @@
-<library path="lib/libimage_proc_chain">
-  <class name="image_proc_chain/Nodelet" type="image_proc_chain::Nodelet"
-    base_class_type="nodelet::Nodelet">
-    <description>
-      Image process nodelet.
-    </description>
-  </class>
-</library>
