@@ -28,11 +28,26 @@ ament_target_dependencies(${PROJECT_NAME}
   std_msgs
 )
 
+add_executable(${PROJECT_NAME}_node
+  src/${PROJECT_NAME}/io_node.cpp
+)
+target_link_libraries(${PROJECT_NAME}_node
+  ${PROJECT_NAME}
+)
+
+# install libraries
 install(TARGETS
     ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+# install executables
+install(TARGETS
+    ${PROJECT_NAME}_node
+    DESTINATION lib/${PROJECT_NAME}
+)
+
 
 ament_package()
