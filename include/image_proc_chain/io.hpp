@@ -17,6 +17,7 @@ class IO : public rclcpp::Node {
   void Process(const sensor_msgs::msg::Image::SharedPtr msg);
 
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
 };
 
 }
