@@ -10,6 +10,7 @@ namespace image_proc_chain {
 
 ChainPiece::ChainPiece(std::shared_ptr<rclcpp::Node> node)
     : node_(node) {
+  image_processor_ = image_processors::Create(node);
   sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
       "~/image_in", 1, std::bind(&ChainPiece::Process, this, _1));
   pub_ = node_->create_publisher<sensor_msgs::msg::Image>("~/image_out", 1);
@@ -27,7 +28,21 @@ void ChainPiece::Process(const sensor_msgs::msg::Image::SharedPtr msg) {
     return;
   }
 
-  RCLCPP_INFO(node_->get_logger(), "%d %d", cv_ptr->image.rows, cv_ptr->image.cols);
+  cv::Mat out = image_processor_->Process(cv_ptr->image);
+
+  std::string encoding;
+  if (out.type() == CV_8UC1) {
+    encoding = "mono8";
+  } else if (out.type() == CV_8UC3) {
+    encoding = "bgr8";
+  } else {
+    RCLCPP_ERROR(node_->get_logger(), "Type of filtered image is invalid");
+    return;
+  }
+
+  sensor_msgs::msg::Image::SharedPtr out_msg = cv_bridge::CvImage(
+      msg->header, encoding, out).toImageMsg();
+
 
   pub_->publish(*msg);
 }
