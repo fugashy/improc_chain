@@ -17,7 +17,6 @@ find_package(std_msgs REQUIRED)
 include_directories(include)
 
 add_library(${PROJECT_NAME}
-  src/${PROJECT_NAME}/node.cpp
   src/${PROJECT_NAME}/chain_piece.cpp
   src/${PROJECT_NAME}/image_processors.cpp
 )
