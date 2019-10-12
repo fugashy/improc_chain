@@ -7,14 +7,16 @@
 
 namespace image_proc_chain {
 
-class IO : public rclcpp::Node {
+class ChainPiece {
  public:
-  using SharedPtr = std::shared_ptr<IO>;
+  using SharedPtr = std::shared_ptr<ChainPiece>;
 
-  IO(const std::string& node_name);
+  explicit ChainPiece(std::shared_ptr<rclcpp::Node> node);
 
  private:
   void Process(const sensor_msgs::msg::Image::SharedPtr msg);
+
+  std::shared_ptr<rclcpp::Node> node_;
 
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;

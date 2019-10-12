@@ -18,7 +18,7 @@ include_directories(include)
 
 add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/node.cpp
-  src/${PROJECT_NAME}/io.cpp
+  src/${PROJECT_NAME}/chain_piece.cpp
   src/${PROJECT_NAME}/image_processors.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}
@@ -30,10 +30,10 @@ ament_target_dependencies(${PROJECT_NAME}
   std_msgs
 )
 
-add_executable(${PROJECT_NAME}_node
-  src/${PROJECT_NAME}/io_node.cpp
+add_executable(${PROJECT_NAME}_chain_piece_node
+  src/${PROJECT_NAME}/chain_piece_node.cpp
 )
-target_link_libraries(${PROJECT_NAME}_node
+target_link_libraries(${PROJECT_NAME}_chain_piece_node
   ${PROJECT_NAME}
 )
 
@@ -47,7 +47,7 @@ install(TARGETS
 
 # install executables
 install(TARGETS
-    ${PROJECT_NAME}_node
+    ${PROJECT_NAME}_chain_piece_node
     DESTINATION lib/${PROJECT_NAME}
 )
 
