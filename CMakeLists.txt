@@ -16,10 +16,10 @@ find_package(std_msgs REQUIRED)
 
 include_directories(include)
 
-add_library(${PROJECT_NAME}
-  src/${PROJECT_NAME}/io.cpp
+add_library(${PROJECT_NAME}_image_processors
+  src/${PROJECT_NAME}/image_processors.cpp
 )
-ament_target_dependencies(${PROJECT_NAME}
+ament_target_dependencies(${PROJECT_NAME}_image_processors
   cv_bridge
   image_transport
   message_filters
@@ -28,16 +28,24 @@ ament_target_dependencies(${PROJECT_NAME}
   std_msgs
 )
 
-add_executable(${PROJECT_NAME}_node
+add_library(${PROJECT_NAME}_io
+  src/${PROJECT_NAME}/io.cpp
+)
+target_link_libraries(${PROJECT_NAME}_io
+  ${PROJECT_NAME}_image_processors
+)
+
+add_executable(${PROJECT_NAME}_io_node
   src/${PROJECT_NAME}/io_node.cpp
 )
-target_link_libraries(${PROJECT_NAME}_node
-  ${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}_io_node
+  ${PROJECT_NAME}_io
 )
 
 # install libraries
 install(TARGETS
-    ${PROJECT_NAME}
+    ${PROJECT_NAME}_image_processors
+    ${PROJECT_NAME}_io
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -45,7 +53,7 @@ install(TARGETS
 
 # install executables
 install(TARGETS
-    ${PROJECT_NAME}_node
+    ${PROJECT_NAME}_io_node
     DESTINATION lib/${PROJECT_NAME}
 )
 
