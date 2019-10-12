@@ -1,6 +1,7 @@
 #include "image_proc_chain/image_processors.hpp"
 
 #include <chrono>
+#include <ratio>
 
 #include <opencv2/imgproc.hpp>
 
@@ -8,6 +9,7 @@ using std::placeholders::_1;
 
 namespace image_proc_chain {
 namespace image_processors {
+
 
 Base::Base(std::shared_ptr<rclcpp::Node>& node) : node_(node) {}
 
@@ -79,6 +81,26 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
   RCLCPP_INFO(node_->get_logger(), "parameter has changed");
 
   return result;
+}
+
+Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
+  auto param_client = std::make_shared<rclcpp::SyncParametersClient>(node);
+  while (!param_client->wait_for_service(std::chrono::duration<uint64_t, std::ratio<1, 1>>(1))) {
+    if (!rclcpp::ok()) {
+      throw std::runtime_error("Interrupted wating service by user");
+    }
+  }
+  const std::string proc_type = param_client->get_parameter<std::string>("proc_type", "gaussian_spacial");
+
+  Base::SharedPtr ptr;
+  if (proc_type == "gaussian_spacial") {
+    ptr.reset(new GaussianSpacial(node));
+  } else {
+    const std::string err = proc_type + " is not implemented";
+    throw std::invalid_argument(err);
+  }
+
+  return ptr;
 }
 
 }

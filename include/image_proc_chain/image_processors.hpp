@@ -32,6 +32,7 @@ class GaussianSpacial : public Base {
   uint32_t iteration_count_;
 };
 
+Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node);
 
 }
 }
