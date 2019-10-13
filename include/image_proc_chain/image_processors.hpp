@@ -35,7 +35,7 @@ class GaussianSpacial : public Base {
 class Diration : public Base {
  public:
   explicit Diration(std::shared_ptr<rclcpp::Node>& node);
-  ~Diration();
+  virtual ~Diration();
   virtual cv::Mat Process(const cv::Mat& image_in);
 
  private:

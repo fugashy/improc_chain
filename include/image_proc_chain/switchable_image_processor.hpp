@@ -8,7 +8,11 @@ namespace image_proc_chain {
 
 class SwitchableImageProcessor {
  public:
+  using SharedPtr = std::shared_ptr<SwitchableImageProcessor>;
+
   explicit SwitchableImageProcessor(rclcpp::Node::SharedPtr node);
+
+  cv::Mat Process(const cv::Mat& image_in);
 
  private:
   void SwitchTypeOfProcessor(

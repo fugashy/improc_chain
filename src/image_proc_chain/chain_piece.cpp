@@ -10,7 +10,7 @@ namespace image_proc_chain {
 
 ChainPiece::ChainPiece(std::shared_ptr<rclcpp::Node> node)
     : node_(node) {
-  image_processor_ = image_processors::Create(node);
+  image_processor_ = std::make_shared<SwitchableImageProcessor>(node);
   sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
       "~/image_in", 1, std::bind(&ChainPiece::Process, this, _1));
   pub_ = node_->create_publisher<sensor_msgs::msg::Image>("~/image_out", 1);
@@ -18,8 +18,6 @@ ChainPiece::ChainPiece(std::shared_ptr<rclcpp::Node> node)
 }
 
 void ChainPiece::Process(const sensor_msgs::msg::Image::SharedPtr msg) {
-  RCLCPP_INFO(node_->get_logger(), "subscription event has come to");
-
   cv_bridge::CvImagePtr cv_ptr;
   try {
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -42,7 +40,6 @@ void ChainPiece::Process(const sensor_msgs::msg::Image::SharedPtr msg) {
 
   sensor_msgs::msg::Image::SharedPtr out_msg = cv_bridge::CvImage(
       msg->header, encoding, out).toImageMsg();
-
 
   pub_->publish(*out_msg);
 }

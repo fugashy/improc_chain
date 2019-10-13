@@ -78,7 +78,6 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
       iteration_count_ = param.as_int();
     }
   }
-  RCLCPP_INFO(node_->get_logger(), "parameter has changed");
 
   return result;
 }
@@ -127,27 +126,32 @@ rcl_interfaces::msg::SetParametersResult Diration::ChangeParameters(
       }
     }
   }
-  RCLCPP_INFO(node_->get_logger(), "parameter has changed");
 
   return result;
 }
 
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
-  auto param_client = std::make_shared<rclcpp::SyncParametersClient>(node);
-  while (!param_client->wait_for_service(std::chrono::duration<uint64_t, std::ratio<1, 1>>(1))) {
-    if (!rclcpp::ok()) {
-      throw std::runtime_error("Interrupted wating service by user");
-    }
+  RCLCPP_INFO(node->get_logger(), "trying to change param");
+  std::string type_str;
+  rclcpp::Parameter type;
+  if (!node->get_parameter("type", type)) {
+    RCLCPP_WARN(node->get_logger(), "Failed to get type, we use default type gaussian_spacial");
+    type_str = "gaussian_spacial";
+  } else {
+    type_str = type.as_string();
   }
-  const std::string proc_type = param_client->get_parameter<std::string>("proc_type", "gaussian_spacial");
+  
+  RCLCPP_INFO(node->get_logger(), "done");
 
   Base::SharedPtr ptr;
-  if (proc_type == "gaussian_spacial") {
+  if (type_str == "gaussian_spacial") {
     ptr.reset(new GaussianSpacial(node));
-  } else if (proc_type == "diration") {
+  } else if (type_str == "diration") {
+    RCLCPP_INFO(node->get_logger(), "Diration");
     ptr.reset(new Diration(node));
+    RCLCPP_INFO(node->get_logger(), "Done");
   } else {
-    const std::string err = proc_type + " is not implemented";
+    const std::string err = type_str + " is not implemented";
     throw std::invalid_argument(err);
   }
 

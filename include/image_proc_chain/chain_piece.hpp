@@ -5,7 +5,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
-#include "image_proc_chain/image_processors.hpp"
+#include "image_proc_chain/switchable_image_processor.hpp"
 
 namespace image_proc_chain {
 
@@ -19,7 +19,7 @@ class ChainPiece {
   void Process(const sensor_msgs::msg::Image::SharedPtr msg);
 
   std::shared_ptr<rclcpp::Node> node_;
-  image_processors::Base::SharedPtr image_processor_;
+  SwitchableImageProcessor::SharedPtr image_processor_;
 
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
