@@ -54,7 +54,7 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
   for (auto param : params) {
     if (param.get_name() == "kernel_x") {
       const int width = param.as_int();
-      if (width % 2 != 1 or width < 1 or width % 2 != 1 or width < 1) {
+      if (width % 2 != 1 or width < 1) {
         result.successful = false;
       } else {
         kernel_.width = param.as_int();
@@ -62,7 +62,7 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
     }
     if (param.get_name() == "kernel_y") {
       const int height = param.as_int();
-      if (height % 2 != 1 or height < 1 or height % 2 != 1 or height < 1) {
+      if (height % 2 != 1 or height < 1) {
         result.successful = false;
       } else {
         kernel_.height = param.as_int();
