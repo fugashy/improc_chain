@@ -44,7 +44,7 @@ void ChainPiece::Process(const sensor_msgs::msg::Image::SharedPtr msg) {
       msg->header, encoding, out).toImageMsg();
 
 
-  pub_->publish(*msg);
+  pub_->publish(*out_msg);
 }
 
 }
