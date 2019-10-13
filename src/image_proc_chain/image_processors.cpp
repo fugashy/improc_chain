@@ -83,6 +83,55 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
   return result;
 }
 
+Diration::Diration(std::shared_ptr<rclcpp::Node>& node)
+    : Base(node),
+      kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
+      iteration_count_(1) {
+  node->set_on_parameters_set_callback(std::bind(&Diration::ChangeParameters, this, _1));
+  node->declare_parameter("kernel_size", 3);
+  node->declare_parameter("iteration_count", 1);
+}
+
+Diration::~Diration() {
+  node_->undeclare_parameter("kernel_size");
+  node_->undeclare_parameter("iteration_count");
+}
+
+cv::Mat Diration::Process(const cv::Mat& image_in) {
+  cv::Mat image_out;
+  cv::dilate(image_in, image_out, kernel_, cv::Point(-1, -1), iteration_count_);
+
+  return image_out;
+}
+
+rcl_interfaces::msg::SetParametersResult Diration::ChangeParameters(
+    const std::vector<rclcpp::Parameter>& params) {
+  auto result = rcl_interfaces::msg::SetParametersResult();
+  result.successful = true;
+
+  for (auto param : params) {
+    if (param.get_name() == "kernel_size") {
+      const int size = param.as_int();
+      if (size < 1) {
+        result.successful = false;
+      } else {
+        kernel_ = cv::Mat::ones(size, size, CV_8UC1);
+      }
+    }
+    if (param.get_name() == "iteration_count") {
+      const int count = param.as_int();
+      if (count < 1) {
+        result.successful = false;
+      } else {
+        iteration_count_ = count;
+      }
+    }
+  }
+  RCLCPP_INFO(node_->get_logger(), "parameter has changed");
+
+  return result;
+}
+
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
   auto param_client = std::make_shared<rclcpp::SyncParametersClient>(node);
   while (!param_client->wait_for_service(std::chrono::duration<uint64_t, std::ratio<1, 1>>(1))) {
@@ -95,6 +144,8 @@ Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
   Base::SharedPtr ptr;
   if (proc_type == "gaussian_spacial") {
     ptr.reset(new GaussianSpacial(node));
+  } else if (proc_type == "diration") {
+    ptr.reset(new Diration(node));
   } else {
     const std::string err = proc_type + " is not implemented";
     throw std::invalid_argument(err);

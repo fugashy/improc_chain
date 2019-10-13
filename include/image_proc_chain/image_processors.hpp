@@ -32,6 +32,20 @@ class GaussianSpacial : public Base {
   uint32_t iteration_count_;
 };
 
+class Diration : public Base {
+ public:
+  explicit Diration(std::shared_ptr<rclcpp::Node>& node);
+  ~Diration();
+  virtual cv::Mat Process(const cv::Mat& image_in);
+
+ private:
+  rcl_interfaces::msg::SetParametersResult ChangeParameters(
+      const std::vector<rclcpp::Parameter>& params);
+
+  cv::Mat kernel_;
+  uint32_t iteration_count_;
+};
+
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node);
 
 }
