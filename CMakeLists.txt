@@ -51,6 +51,12 @@ add_executable(${PROJECT_NAME}_chain_piece_node
 target_link_libraries(${PROJECT_NAME}_chain_piece_node
   ${PROJECT_NAME}_core
 )
+add_executable(${PROJECT_NAME}_chain_processor_node
+  src/${PROJECT_NAME}/chain_processor_node.cpp
+)
+target_link_libraries(${PROJECT_NAME}_chain_processor_node
+  ${PROJECT_NAME}_core
+)
 
 # install libraries
 install(TARGETS
@@ -63,6 +69,7 @@ install(TARGETS
 # install executables
 install(TARGETS
     ${PROJECT_NAME}_chain_piece_node
+    ${PROJECT_NAME}_chain_processor_node
     DESTINATION lib/${PROJECT_NAME}
 )
 
