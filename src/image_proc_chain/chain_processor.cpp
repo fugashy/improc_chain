@@ -1,3 +1,6 @@
+// Copyright 2019 fugashy
+#include <memory>
+
 #include "image_proc_chain/chain_processor.hpp"
 
 using std::placeholders::_1;
@@ -33,4 +36,4 @@ void ChainProcessor::ChangeNumberOfChain(
   response->successful = flexible_chain_executor_->ChangeNumTo(request->num);
 }
 
-}
+}  // namespace image_proc_chain

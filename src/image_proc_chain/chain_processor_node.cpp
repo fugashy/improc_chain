@@ -1,3 +1,6 @@
+// Copyright 2019 fugashy
+#include <memory>
+
 #include "image_proc_chain/chain_processor.hpp"
 
 

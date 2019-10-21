@@ -1,9 +1,14 @@
+// Copyright 2019 fugashy
+#include <chrono>
+#include <memory>
+#include <ratio>
+#include <string>
+#include <vector>
+
+#include "opencv2/imgproc.hpp"
+
 #include "image_proc_chain/image_processors.hpp"
 
-#include <chrono>
-#include <ratio>
-
-#include <opencv2/imgproc.hpp>
 
 using std::placeholders::_1;
 
@@ -13,7 +18,7 @@ namespace image_processors {
 
 Base::Base(std::shared_ptr<rclcpp::Node>& node) : node_(node) {}
 
-const std::string GaussianSpacial::ProcName = "gaussian_spacial";
+const char GaussianSpacial::ProcName[] = "gaussian_spacial";
 
 GaussianSpacial::GaussianSpacial(std::shared_ptr<rclcpp::Node>& node)
     : Base(node),
@@ -56,7 +61,7 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
   for (auto param : params) {
     if (param.get_name() == "kernel_x") {
       const int width = param.as_int();
-      if (width % 2 != 1 or width < 1) {
+      if (width % 2 != 1 || width < 1) {
         result.successful = false;
       } else {
         kernel_.width = param.as_int();
@@ -64,7 +69,7 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
     }
     if (param.get_name() == "kernel_y") {
       const int height = param.as_int();
-      if (height % 2 != 1 or height < 1) {
+      if (height % 2 != 1 || height < 1) {
         result.successful = false;
       } else {
         kernel_.height = param.as_int();
@@ -84,7 +89,7 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
   return result;
 }
 
-const std::string Diration::ProcName = "diration";
+const char Diration::ProcName[] = "diration";
 
 Diration::Diration(std::shared_ptr<rclcpp::Node>& node)
     : Base(node),
@@ -134,7 +139,7 @@ rcl_interfaces::msg::SetParametersResult Diration::ChangeParameters(
   return result;
 }
 
-const std::string Erosion::ProcName = "erosion";
+const char Erosion::ProcName[] = "erosion";
 
 Erosion::Erosion(rclcpp::Node::SharedPtr& node)
     : Base(node),
@@ -184,7 +189,7 @@ rcl_interfaces::msg::SetParametersResult Erosion::ChangeParameters(
   return result;
 }
 
-const std::string CannyEdge::ProcName = "canny_edge";
+const char CannyEdge::ProcName[] = "canny_edge";
 
 CannyEdge::CannyEdge(rclcpp::Node::SharedPtr& node)
     : Base(node),
@@ -238,7 +243,7 @@ rcl_interfaces::msg::SetParametersResult CannyEdge::ChangeParameters(
     }
     if (param.get_name() == "sobel_aperture") {
       const int sobel_aperture = param.as_int();
-      if (sobel_aperture < 3 or 7 < sobel_aperture) {
+      if (sobel_aperture < 3 || 7 < sobel_aperture) {
         RCLCPP_WARN(node_->get_logger(), "sobel_aperture should be in range of 3 and 7");
         result.successful = false;
       } else {
@@ -248,7 +253,8 @@ rcl_interfaces::msg::SetParametersResult CannyEdge::ChangeParameters(
   }
 
   if (val_max <= val_min) {
-    RCLCPP_WARN(node_->get_logger(), "val_max(%d) should be greater than val_min(%d)", val_max, val_min);
+    RCLCPP_WARN(
+        node_->get_logger(), "val_max(%d) should be greater than val_min(%d)", val_max, val_min);
     result.successful = false;
   } else {
     val_max_ = val_max;
@@ -269,7 +275,7 @@ bool IsAvailable(const std::string& type_name) {
 
   bool is_available = false;
   for (auto available_type_name : available_type_names) {
-    if (available_type_name == type_name) {
+    if (available_type_name == type_name.c_str()) {
       is_available = true;
     }
   }
@@ -302,5 +308,5 @@ Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
   return ptr;
 }
 
-}
-}
+}  // namespace image_processors
+}  // namespace image_proc_chain

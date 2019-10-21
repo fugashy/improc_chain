@@ -1,5 +1,8 @@
-#ifndef IMAGE_PROC_CHAIN_CHAIN_PROCESSOR_HPP_
-#define IMAGE_PROC_CHAIN_CHAIN_PROCESSOR_HPP_
+// Copyright 2019 fugashy
+#ifndef IMAGE_PROC_CHAIN__CHAIN_PROCESSOR_HPP_
+#define IMAGE_PROC_CHAIN__CHAIN_PROCESSOR_HPP_
+#include <memory>
+
 #include "image_proc_chain/flexible_chain_executor.hpp"
 #include "image_proc_chain/srv/change_chain_num.hpp"
 
@@ -27,6 +30,6 @@ class ChainProcessor {
   rclcpp::Service<srv::ChangeChainNum>::SharedPtr srv_;
 };
 
-}
+}  // namespace image_proc_chain
 
-#endif
+#endif  // IMAGE_PROC_CHAIN__CHAIN_PROCESSOR_HPP_

@@ -1,5 +1,7 @@
-#ifndef IMAGE_PROC_CHAIN_SWITCHABLE_IMAGE_PROCESSOR_HPP_
-#define IMAGE_PROC_CHAIN_SWITCHABLE_IMAGE_PROCESSOR_HPP_
+// Copyright 2019 fugashy
+#ifndef IMAGE_PROC_CHAIN__SWITCHABLE_IMAGE_PROCESSOR_HPP_
+#define IMAGE_PROC_CHAIN__SWITCHABLE_IMAGE_PROCESSOR_HPP_
+#include <memory>
 
 #include "image_proc_chain/image_processors.hpp"
 #include "image_proc_chain/srv/switch_processor_type.hpp"
@@ -26,5 +28,6 @@ class SwitchableImageProcessor {
   rclcpp::Service<srv::SwitchProcessorType>::SharedPtr srv_;
 };
 
-}
-#endif
+}  // namespace image_proc_chain
+
+#endif  // IMAGE_PROC_CHAIN__SWITCHABLE_IMAGE_PROCESSOR_HPP_

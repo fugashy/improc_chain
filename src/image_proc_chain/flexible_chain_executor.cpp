@@ -1,8 +1,12 @@
+// Copyright 2019 fugashy
+#include <string>
+
 #include "image_proc_chain/flexible_chain_executor.hpp"
 
 namespace image_proc_chain {
 
-FlexibleChainExecutor::FlexibleChainExecutor(rclcpp::Node::SharedPtr& node, const uint32_t default_num)
+FlexibleChainExecutor::FlexibleChainExecutor(
+    rclcpp::Node::SharedPtr& node, const uint32_t default_num)
     : node_(node) {
   piece_nodes_.resize(default_num);
   chain_pieces_.resize(default_num);
@@ -70,4 +74,4 @@ bool FlexibleChainExecutor::ChangeNumTo(const uint32_t num) {
   }
 }
 
-}
+}  // namespace image_proc_chain

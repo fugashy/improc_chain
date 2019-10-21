@@ -1,7 +1,12 @@
-#ifndef IMAGE_PROC_CHAIN_IMAGE_PROCESSORS_HPP_
-#define IMAGE_PROC_CHAIN_IMAGE_PROCESSORS_HPP_
-#include <opencv2/core.hpp>
-#include <rclcpp/rclcpp.hpp>
+// Copyright 2019 fugashy
+#ifndef IMAGE_PROC_CHAIN__IMAGE_PROCESSORS_HPP_
+#define IMAGE_PROC_CHAIN__IMAGE_PROCESSORS_HPP_
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "opencv2/core.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace image_proc_chain {
 namespace image_processors {
@@ -9,8 +14,9 @@ namespace image_processors {
 class Base {
  public:
   using SharedPtr = std::shared_ptr<Base>;
-  Base(std::shared_ptr<rclcpp::Node>& node);
+  explicit Base(std::shared_ptr<rclcpp::Node>& node);
   virtual ~Base() = default;
+
   virtual cv::Mat Process(const cv::Mat& image_in) = 0;
 
  protected:
@@ -19,7 +25,7 @@ class Base {
 
 class GaussianSpacial : public Base {
  public:
-  static const std::string ProcName;
+  static const char ProcName[];
   explicit GaussianSpacial(std::shared_ptr<rclcpp::Node>& node);
   virtual ~GaussianSpacial();
   virtual cv::Mat Process(const cv::Mat& image_in);
@@ -35,7 +41,7 @@ class GaussianSpacial : public Base {
 
 class Diration : public Base {
  public:
-  static const std::string ProcName;
+  static const char ProcName[];
   explicit Diration(std::shared_ptr<rclcpp::Node>& node);
   virtual ~Diration();
   virtual cv::Mat Process(const cv::Mat& image_in);
@@ -51,7 +57,7 @@ class Diration : public Base {
 
 class Erosion : public Base {
  public:
-  static const std::string ProcName;
+  static const char ProcName[];
   explicit Erosion(rclcpp::Node::SharedPtr& node);
   virtual ~Erosion();
   virtual cv::Mat Process(const cv::Mat& image_in);
@@ -67,7 +73,7 @@ class Erosion : public Base {
 
 class CannyEdge : public Base {
  public:
-  static const std::string ProcName;
+  static const char ProcName[];
   explicit CannyEdge(rclcpp::Node::SharedPtr& node);
   virtual ~CannyEdge();
   virtual cv::Mat Process(const cv::Mat& image_in);
@@ -84,7 +90,7 @@ class CannyEdge : public Base {
 bool IsAvailable(const std::string& type_name);
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node);
 
-}
-}
+}  // namespace image_processors
+}  // namespace image_proc_chain
 
-#endif
+#endif  // IMAGE_PROC_CHAIN__IMAGE_PROCESSORS_HPP_

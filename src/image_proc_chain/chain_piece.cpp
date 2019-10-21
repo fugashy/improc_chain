@@ -1,7 +1,11 @@
-#include "image_proc_chain/chain_piece.hpp"
+// Copyright 2019 fugashy
+#include <memory>
+#include <string>
 
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.hpp>
+#include "cv_bridge/cv_bridge.h"
+#include "sensor_msgs/image_encodings.hpp"
+
+#include "image_proc_chain/chain_piece.hpp"
 
 
 using std::placeholders::_1;
@@ -46,4 +50,4 @@ void ChainPiece::Process(const sensor_msgs::msg::Image::SharedPtr msg) {
   pub_->publish(*out_msg);
 }
 
-}
+}  // namespace image_proc_chain

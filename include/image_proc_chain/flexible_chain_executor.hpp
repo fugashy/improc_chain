@@ -1,5 +1,9 @@
-#ifndef IMAGE_PROC_CHAIN_FLEXIBLE_CHAIN_EXECUTOR_HPP_
-#define IMAGE_PROC_CHAIN_FLEXIBLE_CHAIN_EXECUTOR_HPP_
+// Copyright 2019 fugashy
+#ifndef IMAGE_PROC_CHAIN__FLEXIBLE_CHAIN_EXECUTOR_HPP_
+#define IMAGE_PROC_CHAIN__FLEXIBLE_CHAIN_EXECUTOR_HPP_
+#include <memory>
+#include <vector>
+
 #include "image_proc_chain/chain_piece.hpp"
 
 namespace image_proc_chain {
@@ -24,5 +28,6 @@ class FlexibleChainExecutor {
   rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
 };
 
-}
-#endif
+}  // namespace image_proc_chain
+
+#endif  // IMAGE_PROC_CHAIN__FLEXIBLE_CHAIN_EXECUTOR_HPP_

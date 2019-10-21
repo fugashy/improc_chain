@@ -1,9 +1,11 @@
-#ifndef IMAGE_PROC_CHAIN_IO_HPP_
-#define IMAGE_PROC_CHAIN_IO_HPP_
+// Copyright 2019 fugashy
+#ifndef IMAGE_PROC_CHAIN__CHAIN_PIECE_HPP_
+#define IMAGE_PROC_CHAIN__CHAIN_PIECE_HPP_
 #include <memory>
+#include <string>
 
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/image.hpp>
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/image.hpp"
 
 #include "image_proc_chain/switchable_image_processor.hpp"
 
@@ -27,6 +29,6 @@ class ChainPiece {
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
 };
 
-}
+}  // namespace image_proc_chain
 
-#endif
+#endif  // IMAGE_PROC_CHAIN__CHAIN_PIECE_HPP_
