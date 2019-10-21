@@ -16,6 +16,8 @@ class FlexibleChainExecutor {
 
   bool ChangeNumTo(const uint32_t num);
 
+  rclcpp::executors::SingleThreadedExecutor::SharedPtr get_executor() const { return executor_; }
+
  private:
   rclcpp::Node::SharedPtr node_;
 
@@ -28,11 +30,14 @@ class FlexibleChainExecutor {
 
 class ChainProcessor {
  public:
-  explicit ChainProcessor(const std::string& node_name);
+  explicit ChainProcessor(rclcpp::Node::SharedPtr& node);
   virtual ~ChainProcessor();
 
- private:
+  rclcpp::executors::SingleThreadedExecutor::SharedPtr get_executor() const {
+    return flexible_chain_executor_->get_executor();
+  }
 
+ private:
   void ChangeNumberOfChain(
       const std::shared_ptr<rmw_request_id_t> request_header,
       const std::shared_ptr<srv::ChangeChainNum::Request> request,
