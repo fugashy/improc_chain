@@ -14,9 +14,9 @@ Way to validate result of image process every step.
 # Processors
 
   - ~~Bilateral space filter~~
-  - ~~Canny edge detection~~
+  - Canny edge detection
   - Dilation
-  - ~~Erosion~~
+  - Erosion
   - ~~Gamma correction of gray image~~
   - Gaussian spacial filter
 
@@ -30,6 +30,12 @@ T.B.Developed
 ```bash
 ros2 run image_proc_chain image_proc_chain image_proc_chain_chain_piece_node /chain_piece/image_in:=/your_image_topic_name
 ```
+
+  Switching command is
+
+  ```bash
+  ros2 service call /chain_piece/switch_processor_type image_proc_chain/srv/SwitchProcessorType "'type': 'canny_edge'"
+  ```
 
 # Lisence
 
