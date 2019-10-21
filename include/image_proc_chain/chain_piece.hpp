@@ -13,7 +13,9 @@ class ChainPiece {
  public:
   using SharedPtr = std::shared_ptr<ChainPiece>;
 
-  explicit ChainPiece(std::shared_ptr<rclcpp::Node> node);
+  explicit ChainPiece(
+      std::shared_ptr<rclcpp::Node> node,
+      const std::string& in_topic_name = "/camera/image_raw");
 
  private:
   void Process(const sensor_msgs::msg::Image::SharedPtr msg);

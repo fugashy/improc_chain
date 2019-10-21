@@ -11,35 +11,43 @@ FlexibleChainExecutor::FlexibleChainExecutor(rclcpp::Node::SharedPtr& node, cons
   piece_nodes_.resize(default_num);
   chain_pieces_.resize(default_num);
   for (uint32_t i = 0; i < default_num; ++i) {
-    piece_nodes_[i].reset(new rclcpp::Node("chain_piece_" + std::to_string(i)));
-    chain_pieces_[i].reset(new SwitchableImageProcessor(piece_nodes_[i]));
+    const std::string node_name = "chain_piece_" + std::to_string(i);
+    piece_nodes_[i].reset(new rclcpp::Node(node_name));
+    if (i == 0) {
+      chain_pieces_[i].reset(new ChainPiece(piece_nodes_[i]));
+    } else {
+      const std::string pre_node_name = "chain_piece_" + std::to_string(i - 1);
+      chain_pieces_[i].reset(new ChainPiece(piece_nodes_[i], pre_node_name + "/image_out"));
+    }
     executor_->add_node(piece_nodes_[i]);
   }
 }
 
 bool FlexibleChainExecutor::ChangeNumTo(const uint32_t num) {
-  const uint32_t current_num = piece_nodes_.size();
-  if (num == current_num) {
+  const int current_num = piece_nodes_.size();
+  if (static_cast<int>(num) == current_num) {
     RCLCPP_WARN(node_->get_logger(), "Requested chain-num is the same as current one(%d)", num);
     return false;
-  } else if (num > current_num) {
+  } else if (static_cast<int>(num) > current_num) {
     RCLCPP_INFO(node_->get_logger(), "Request(%d) is less than current one", num);
     const int diff = num - current_num;
     for (int i = 0; i < diff; ++i) {
-      piece_nodes_.emplace_back(
-          rclcpp::Node::SharedPtr(
-              new rclcpp::Node("/chain_piece_" + std::to_string(i))));
+      const int node_id = current_num - 1 + (i + 1);
+      const std::string node_name = "chain_piece_" + std::to_string(node_id);
+      const std::string pre_node_name = "chain_piece_" + std::to_string(node_id - 1);
+      piece_nodes_.emplace_back(rclcpp::Node::SharedPtr(new rclcpp::Node(node_name)));
       chain_pieces_.emplace_back(
-          SwitchableImageProcessor::SharedPtr(
-              new SwitchableImageProcessor(piece_nodes_[current_num - 1 + (i + 1)])));
+          ChainPiece::SharedPtr(
+              new ChainPiece(piece_nodes_[node_id], pre_node_name + "/image_out")));
       executor_->add_node((piece_nodes_[current_num + i]));
     }
     return true;
   } else {
     RCLCPP_INFO(node_->get_logger(), "Request(%d) is less than current one", num);
     const int diff = num - current_num;
-    for (int i = 0; i < diff; ++i) {
-      executor_->remove_node((piece_nodes_[current_num - 1 - (i + 1)]));
+    for (int i = 0; i < std::abs(diff); ++i) {
+      const int node_id = current_num - 1 - (i + 1);
+      executor_->remove_node((piece_nodes_[node_id]));
       chain_pieces_.pop_back();
       piece_nodes_.pop_back();
     }

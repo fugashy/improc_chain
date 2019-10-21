@@ -1,7 +1,7 @@
 #ifndef IMAGE_PROC_CHAIN_CHAIN_PROCESSOR_HPP_
 #define IMAGE_PROC_CHAIN_CHAIN_PROCESSOR_HPP_
 
-#include "image_proc_chain/switchable_image_processor.hpp"
+#include "image_proc_chain/chain_piece.hpp"
 #include "image_proc_chain/srv/change_chain_num.hpp"
 
 
@@ -20,7 +20,7 @@ class FlexibleChainExecutor {
   rclcpp::Node::SharedPtr node_;
 
   std::vector<rclcpp::Node::SharedPtr> piece_nodes_;
-  std::vector<SwitchableImageProcessor::SharedPtr> chain_pieces_;
+  std::vector<ChainPiece::SharedPtr> chain_pieces_;
 
   rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
 };
