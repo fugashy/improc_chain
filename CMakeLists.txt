@@ -31,6 +31,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 add_library(${PROJECT_NAME}_core
   src/${PROJECT_NAME}/chain_processor.cpp
+  src/${PROJECT_NAME}/flexible_chain_executor.cpp
   src/${PROJECT_NAME}/chain_piece.cpp
   src/${PROJECT_NAME}/image_processors.cpp
   src/${PROJECT_NAME}/switchable_image_processor.cpp
