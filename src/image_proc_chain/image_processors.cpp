@@ -184,11 +184,87 @@ rcl_interfaces::msg::SetParametersResult Erosion::ChangeParameters(
   return result;
 }
 
+const std::string CannyEdge::ProcName = "canny_edge";
+
+CannyEdge::CannyEdge(rclcpp::Node::SharedPtr& node)
+    : Base(node),
+      val_max_(100),
+      val_min_(50),
+      sobel_aperture_(3) {
+  node->set_on_parameters_set_callback(std::bind(&CannyEdge::ChangeParameters, this, _1));
+  node->declare_parameter("val_max", 100);
+  node->declare_parameter("val_min", 50);
+  node->declare_parameter("sobel_aperture", 3);
+}
+
+CannyEdge::~CannyEdge() {
+  node_->undeclare_parameter("val_max");
+  node_->undeclare_parameter("val_min");
+  node_->undeclare_parameter("sobel_aperture");
+}
+
+cv::Mat CannyEdge::Process(const cv::Mat& image_in) {
+  cv::Mat tmp = image_in.clone();
+  if (image_in.type() != CV_8UC1) {
+    cv::cvtColor(image_in, tmp, cv::COLOR_RGB2GRAY);
+  }
+
+  cv::Mat image_out;
+  cv::Canny(tmp, image_out, val_min_, val_max_, sobel_aperture_);
+
+  return image_out;
+}
+
+rcl_interfaces::msg::SetParametersResult CannyEdge::ChangeParameters(
+    const std::vector<rclcpp::Parameter>& params) {
+  auto result = rcl_interfaces::msg::SetParametersResult();
+  result.successful = true;
+
+  int val_max, val_min;
+  for (auto param : params) {
+    if (param.get_name() == "val_max") {
+      val_max = param.as_int();
+      if (val_max < 1) {
+        RCLCPP_WARN(node_->get_logger(), "val_max should be greater than 0");
+        result.successful = false;
+      }
+    }
+    if (param.get_name() == "val_min") {
+      val_min = param.as_int();
+      if (val_min < 1) {
+        RCLCPP_WARN(node_->get_logger(), "val_min should be greater than 0");
+        result.successful = false;
+      }
+    }
+    if (param.get_name() == "sobel_aperture") {
+      const int sobel_aperture = param.as_int();
+      if (sobel_aperture < 3 or 7 < sobel_aperture) {
+        RCLCPP_WARN(node_->get_logger(), "sobel_aperture should be in range of 3 and 7");
+        result.successful = false;
+      } else {
+        sobel_aperture_ = sobel_aperture;
+      }
+    }
+  }
+
+  if (val_max <= val_min) {
+    RCLCPP_WARN(node_->get_logger(), "val_max(%d) should be greater than val_min(%d)", val_max, val_min);
+    result.successful = false;
+  } else {
+    val_max_ = val_max;
+    val_min_ = val_min;
+  }
+
+  return result;
+}
+
+
 bool IsAvailable(const std::string& type_name) {
   const std::vector<std::string> available_type_names{
     GaussianSpacial::ProcName,
     Diration::ProcName,
     Erosion::ProcName,
+    CannyEdge::ProcName,
   };
 
   bool is_available = false;
@@ -217,6 +293,8 @@ Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
     ptr.reset(new Diration(node));
   } else if (type_str == Erosion::ProcName) {
     ptr.reset(new Erosion(node));
+  } else if (type_str == CannyEdge::ProcName) {
+    ptr.reset(new CannyEdge(node));
   } else {
     RCLCPP_ERROR(node->get_logger(), "%s is not implemented", type_str.c_str());
   }

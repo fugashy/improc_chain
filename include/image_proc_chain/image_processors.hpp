@@ -64,6 +64,23 @@ class Erosion : public Base {
   uint32_t iteration_count_;
 };
 
+
+class CannyEdge : public Base {
+ public:
+  static const std::string ProcName;
+  explicit CannyEdge(rclcpp::Node::SharedPtr& node);
+  virtual ~CannyEdge();
+  virtual cv::Mat Process(const cv::Mat& image_in);
+
+ private:
+  rcl_interfaces::msg::SetParametersResult ChangeParameters(
+      const std::vector<rclcpp::Parameter>& params);
+
+  uint32_t val_max_;
+  uint32_t val_min_;
+  uint32_t sobel_aperture_;
+};
+
 bool IsAvailable(const std::string& type_name);
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node);
 
