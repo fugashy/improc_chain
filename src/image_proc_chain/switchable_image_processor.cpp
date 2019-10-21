@@ -26,7 +26,19 @@ void SwitchableImageProcessor::SwitchTypeOfProcessor(
   (void)request_header;
 
   RCLCPP_INFO(node_->get_logger(), "Switch service has called(req: %s)", request->type.c_str());
-  node_->declare_parameter("type", request->type);
+
+  if (!image_processors::IsAvailable(request->type)) {
+    RCLCPP_WARN(node_->get_logger(), "%s is not available", request->type.c_str());
+    response->successful = false;
+    return;
+  }
+
+  try {
+    node_->declare_parameter("type", request->type);
+  } catch (rclcpp::exceptions::ParameterAlreadyDeclaredException& e) {
+    rclcpp::Parameter type("type", request->type);
+    node_->set_parameter(type);
+  }
   try {
     image_processor_.reset();
     image_processor_ = image_processors::Create(node_);

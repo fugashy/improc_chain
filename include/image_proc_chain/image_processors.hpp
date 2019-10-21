@@ -19,6 +19,7 @@ class Base {
 
 class GaussianSpacial : public Base {
  public:
+  static const std::string ProcName;
   explicit GaussianSpacial(std::shared_ptr<rclcpp::Node>& node);
   virtual ~GaussianSpacial();
   virtual cv::Mat Process(const cv::Mat& image_in);
@@ -34,6 +35,7 @@ class GaussianSpacial : public Base {
 
 class Diration : public Base {
  public:
+  static const std::string ProcName;
   explicit Diration(std::shared_ptr<rclcpp::Node>& node);
   virtual ~Diration();
   virtual cv::Mat Process(const cv::Mat& image_in);
@@ -46,6 +48,7 @@ class Diration : public Base {
   uint32_t iteration_count_;
 };
 
+bool IsAvailable(const std::string& type_name);
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node);
 
 }

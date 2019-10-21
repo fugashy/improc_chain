@@ -13,6 +13,8 @@ namespace image_processors {
 
 Base::Base(std::shared_ptr<rclcpp::Node>& node) : node_(node) {}
 
+const std::string GaussianSpacial::ProcName = "gaussian_spacial";
+
 GaussianSpacial::GaussianSpacial(std::shared_ptr<rclcpp::Node>& node)
     : Base(node),
       kernel_(cv::Size(21, 21)),
@@ -82,6 +84,8 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
   return result;
 }
 
+const std::string Diration::ProcName = "diration";
+
 Diration::Diration(std::shared_ptr<rclcpp::Node>& node)
     : Base(node),
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
@@ -130,29 +134,37 @@ rcl_interfaces::msg::SetParametersResult Diration::ChangeParameters(
   return result;
 }
 
+bool IsAvailable(const std::string& type_name) {
+  const std::vector<std::string> available_type_names{
+    GaussianSpacial::ProcName,
+    Diration::ProcName};
+
+  bool is_available = false;
+  for (auto available_type_name : available_type_names) {
+    if (available_type_name == type_name) {
+      is_available = true;
+    }
+  }
+  return is_available;
+}
+
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
-  RCLCPP_INFO(node->get_logger(), "trying to change param");
   std::string type_str;
   rclcpp::Parameter type;
   if (!node->get_parameter("type", type)) {
     RCLCPP_WARN(node->get_logger(), "Failed to get type, we use default type gaussian_spacial");
-    type_str = "gaussian_spacial";
+    type_str = GaussianSpacial::ProcName;
   } else {
     type_str = type.as_string();
   }
-  
-  RCLCPP_INFO(node->get_logger(), "done");
 
   Base::SharedPtr ptr;
-  if (type_str == "gaussian_spacial") {
+  if (type_str == GaussianSpacial::ProcName) {
     ptr.reset(new GaussianSpacial(node));
-  } else if (type_str == "diration") {
-    RCLCPP_INFO(node->get_logger(), "Diration");
+  } else if (type_str == Diration::ProcName) {
     ptr.reset(new Diration(node));
-    RCLCPP_INFO(node->get_logger(), "Done");
   } else {
-    const std::string err = type_str + " is not implemented";
-    throw std::invalid_argument(err);
+    RCLCPP_ERROR(node->get_logger(), "%s is not implemented", type_str.c_str());
   }
 
   return ptr;
