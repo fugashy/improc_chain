@@ -134,10 +134,62 @@ rcl_interfaces::msg::SetParametersResult Diration::ChangeParameters(
   return result;
 }
 
+const std::string Erosion::ProcName = "erosion";
+
+Erosion::Erosion(rclcpp::Node::SharedPtr& node)
+    : Base(node),
+      kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
+      iteration_count_(1) {
+  node->set_on_parameters_set_callback(std::bind(&Erosion::ChangeParameters, this, _1));
+  node->declare_parameter("kernel_size", 3);
+  node->declare_parameter("iteration_count", 1);
+}
+
+Erosion::~Erosion() {
+  node_->undeclare_parameter("kernel_size");
+  node_->undeclare_parameter("iteration_count");
+}
+
+cv::Mat Erosion::Process(const cv::Mat& image_in) {
+  cv::Mat image_out;
+  cv::erode(image_in, image_out, kernel_, cv::Point(-1, -1), iteration_count_);
+
+  return image_out;
+}
+
+rcl_interfaces::msg::SetParametersResult Erosion::ChangeParameters(
+    const std::vector<rclcpp::Parameter>& params) {
+  auto result = rcl_interfaces::msg::SetParametersResult();
+  result.successful = true;
+
+  for (auto param : params) {
+    if (param.get_name() == "kernel_size") {
+      const int size = param.as_int();
+      if (size < 1) {
+        result.successful = false;
+      } else {
+        kernel_ = cv::Mat::ones(size, size, CV_8UC1);
+      }
+    }
+    if (param.get_name() == "iteration_count") {
+      const int count = param.as_int();
+      if (count < 1) {
+        result.successful = false;
+      } else {
+        iteration_count_ = count;
+      }
+    }
+  }
+
+  return result;
+}
+
 bool IsAvailable(const std::string& type_name) {
   const std::vector<std::string> available_type_names{
     GaussianSpacial::ProcName,
-    Diration::ProcName};
+    Diration::ProcName,
+    Erosion::ProcName,
+  };
 
   bool is_available = false;
   for (auto available_type_name : available_type_names) {
@@ -163,6 +215,8 @@ Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
     ptr.reset(new GaussianSpacial(node));
   } else if (type_str == Diration::ProcName) {
     ptr.reset(new Diration(node));
+  } else if (type_str == Erosion::ProcName) {
+    ptr.reset(new Erosion(node));
   } else {
     RCLCPP_ERROR(node->get_logger(), "%s is not implemented", type_str.c_str());
   }

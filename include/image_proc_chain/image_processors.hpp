@@ -48,6 +48,22 @@ class Diration : public Base {
   uint32_t iteration_count_;
 };
 
+
+class Erosion : public Base {
+ public:
+  static const std::string ProcName;
+  explicit Erosion(rclcpp::Node::SharedPtr& node);
+  virtual ~Erosion();
+  virtual cv::Mat Process(const cv::Mat& image_in);
+
+ private:
+  rcl_interfaces::msg::SetParametersResult ChangeParameters(
+      const std::vector<rclcpp::Parameter>& params);
+
+  cv::Mat kernel_;
+  uint32_t iteration_count_;
+};
+
 bool IsAvailable(const std::string& type_name);
 Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node);
 
