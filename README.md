@@ -25,6 +25,12 @@ Way to validate result of image process every step.
 
 T.B.Developed
 
+- As single chained image processor
+
+```bash
+ros2 run image_proc_chain image_proc_chain image_proc_chain_chain_piece_node /chain_piece/image_in:=/your_image_topic_name
+```
+
 # Lisence
 
 Under 3-caused BSD lisence.
