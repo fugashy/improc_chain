@@ -67,6 +67,11 @@ install(TARGETS
   RUNTIME DESTINATION bin
 )
 
+#install other files
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+
 # install executables
 install(TARGETS
     ${PROJECT_NAME}_chain_piece_node
