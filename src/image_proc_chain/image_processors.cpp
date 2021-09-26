@@ -25,7 +25,7 @@ GaussianSpacial::GaussianSpacial(std::shared_ptr<rclcpp::Node>& node)
       kernel_(cv::Size(21, 21)),
       sigma_(cv::Vec2d(1.0, 1.0)),
       iteration_count_(1)  {
-  node->set_on_parameters_set_callback(std::bind(&GaussianSpacial::ChangeParameters, this, _1));
+  param_handler_ = node->add_on_set_parameters_callback(std::bind(&GaussianSpacial::ChangeParameters, this, _1));
   node->declare_parameter("kernel_x", 21);
   node->declare_parameter("kernel_y", 21);
   node->declare_parameter("sigma_x", 1.0);
@@ -95,7 +95,7 @@ Diration::Diration(std::shared_ptr<rclcpp::Node>& node)
     : Base(node),
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
-  node->set_on_parameters_set_callback(std::bind(&Diration::ChangeParameters, this, _1));
+  param_handler_ = node->add_on_set_parameters_callback(std::bind(&Diration::ChangeParameters, this, _1));
   node->declare_parameter("kernel_size", 3);
   node->declare_parameter("iteration_count", 1);
 }
@@ -145,7 +145,7 @@ Erosion::Erosion(rclcpp::Node::SharedPtr& node)
     : Base(node),
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
-  node->set_on_parameters_set_callback(std::bind(&Erosion::ChangeParameters, this, _1));
+  param_handler_ = node->add_on_set_parameters_callback(std::bind(&Erosion::ChangeParameters, this, _1));
   node->declare_parameter("kernel_size", 3);
   node->declare_parameter("iteration_count", 1);
 }
@@ -196,7 +196,7 @@ CannyEdge::CannyEdge(rclcpp::Node::SharedPtr& node)
       val_max_(100),
       val_min_(50),
       sobel_aperture_(3) {
-  node->set_on_parameters_set_callback(std::bind(&CannyEdge::ChangeParameters, this, _1));
+  param_handler_ = node->add_on_set_parameters_callback(std::bind(&CannyEdge::ChangeParameters, this, _1));
   node->declare_parameter("val_max", 100);
   node->declare_parameter("val_min", 50);
   node->declare_parameter("sobel_aperture", 3);

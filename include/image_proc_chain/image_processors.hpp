@@ -48,6 +48,11 @@ class Base {
    * Used to get/set parameter, for logging
    */
   std::shared_ptr<rclcpp::Node> node_;
+
+  /**
+   * @brief Pointer to a handlaer that manage parameter callbacks
+   */
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_handler_;
 };
 
 class GaussianSpacial : public Base {

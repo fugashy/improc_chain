@@ -16,7 +16,7 @@ image_proc_chain has a ros service that can change length of the chain_piece.
 # Develop environment
 
 - OS: MacOS Catalina 10.15
-- ROS2 dashing diademata (20190531)
+- ROS2 foxy
 
 # Overview
 
