@@ -5,7 +5,6 @@
   <version>2.0.0</version>
   <description>Way to validate result of image process every step</description>
 
-  <author>Fukukazu Kawata</author>
   <maintainer email="fugashy@icloud.com">fugashy</maintainer>
 
   <license>BSD</license>
@@ -13,19 +12,16 @@
   <url type="repository">https://github.com/fugashy</url>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>message_filters</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
+  <depend>image_proc_chain_msgs</depend>
+
 
   <exec_depend>launch_ros</exec_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
-
-  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>

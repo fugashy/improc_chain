@@ -18,15 +18,11 @@ find_package(message_filters REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(image_proc_chain_msgs REQUIRED)
 
 
-include_directories(include)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "srv/SwitchProcessorType.srv"
-  "srv/ChangeChainNum.srv"
-  DEPENDENCIES std_msgs
+include_directories(
+  include
 )
 
 add_library(${PROJECT_NAME}_core
@@ -42,7 +38,7 @@ ament_target_dependencies(${PROJECT_NAME}_core
   message_filters
   rclcpp
   sensor_msgs
-  std_msgs
+  image_proc_chain_msgs
 )
 
 
@@ -79,14 +75,14 @@ install(TARGETS
     DESTINATION lib/${PROJECT_NAME}
 )
 
-get_default_rmw_implementation(rmw_implementation)
-find_package("${rmw_implementation}" REQUIRED)
-get_rmw_typesupport(typesupport_impls "${rmw_implementation}" LANGUAGE "cpp")
-foreach(typesupport_impl ${typesupport_impls})
-  rosidl_target_interfaces(${PROJECT_NAME}_core
-    ${PROJECT_NAME} ${typesupport_impl}
-  )
-endforeach()
+# get_default_rmw_implementation(rmw_implementation)
+# find_package("${rmw_implementation}" REQUIRED)
+# get_rmw_typesupport(typesupport_impls "${rmw_implementation}" LANGUAGE "cpp")
+# foreach(typesupport_impl ${typesupport_impls})
+#   rosidl_target_interfaces(${PROJECT_NAME}_core
+#     ${PROJECT_NAME} ${typesupport_impl}
+#   )
+# endforeach()
 
 ament_export_dependencies(rosidl_default_runtime)
 ament_package()

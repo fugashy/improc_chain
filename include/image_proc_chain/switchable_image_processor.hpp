@@ -3,8 +3,9 @@
 #define IMAGE_PROC_CHAIN__SWITCHABLE_IMAGE_PROCESSOR_HPP_
 #include <memory>
 
+#include <image_proc_chain_msgs/srv/switch_processor_type.hpp>
+
 #include "image_proc_chain/image_processors.hpp"
-#include "image_proc_chain/srv/switch_processor_type.hpp"
 
 namespace image_proc_chain {
 
@@ -43,8 +44,8 @@ class SwitchableImageProcessor {
    */
   void SwitchTypeOfProcessor(
       const std::shared_ptr<rmw_request_id_t> request_header,
-      const std::shared_ptr<srv::SwitchProcessorType::Request> request,
-      std::shared_ptr<srv::SwitchProcessorType::Response> response);
+      const std::shared_ptr<image_proc_chain_msgs::srv::SwitchProcessorType::Request> request,
+      std::shared_ptr<image_proc_chain_msgs::srv::SwitchProcessorType::Response> response);
 
   /**
    * @brief Pointer to noe
@@ -59,7 +60,7 @@ class SwitchableImageProcessor {
   /**
    * @brief Pointer to service server for switching processors
    */
-  rclcpp::Service<srv::SwitchProcessorType>::SharedPtr srv_;
+  rclcpp::Service<image_proc_chain_msgs::srv::SwitchProcessorType>::SharedPtr srv_;
 };
 
 }  // namespace image_proc_chain

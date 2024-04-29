@@ -3,8 +3,9 @@
 #define IMAGE_PROC_CHAIN__CHAIN_PROCESSOR_HPP_
 #include <memory>
 
+#include <image_proc_chain_msgs/srv/change_chain_num.hpp>
+
 #include "image_proc_chain/flexible_chain_executor.hpp"
-#include "image_proc_chain/srv/change_chain_num.hpp"
 
 
 namespace image_proc_chain {
@@ -46,8 +47,8 @@ class ChainProcessor {
    */
   void ChangeNumberOfChain(
       const std::shared_ptr<rmw_request_id_t> request_header,
-      const std::shared_ptr<srv::ChangeChainNum::Request> request,
-      std::shared_ptr<srv::ChangeChainNum::Response> response);
+      const std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Request> request,
+      std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Response> response);
 
   /**
    * @brief Pointer to node
@@ -62,7 +63,7 @@ class ChainProcessor {
   /**
    * @brief Pointer to service server
    */
-  rclcpp::Service<srv::ChangeChainNum>::SharedPtr srv_;
+  rclcpp::Service<image_proc_chain_msgs::srv::ChangeChainNum>::SharedPtr srv_;
 };
 
 }  // namespace image_proc_chain

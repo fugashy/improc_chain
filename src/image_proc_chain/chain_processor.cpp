@@ -15,7 +15,7 @@ ChainProcessor::ChainProcessor(rclcpp::Node::SharedPtr& node) : node_(node) {
 
   flexible_chain_executor_.reset(new FlexibleChainExecutor(node_, chain_num));
 
-  srv_ = node_->create_service<srv::ChangeChainNum>(
+  srv_ = node_->create_service<image_proc_chain_msgs::srv::ChangeChainNum>(
       "~/change_chain_num",
       std::bind(&ChainProcessor::ChangeNumberOfChain, this, _1, _2, _3));
 }
@@ -26,8 +26,8 @@ ChainProcessor::~ChainProcessor() {
 
 void ChainProcessor::ChangeNumberOfChain(
     const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<srv::ChangeChainNum::Request> request,
-    std::shared_ptr<srv::ChangeChainNum::Response> response) {
+    const std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Request> request,
+    std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Response> response) {
   // avoid unused error
   (void)request_header;
 
