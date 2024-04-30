@@ -97,8 +97,8 @@ Diration::Diration(rclcpp::Node* node)
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&Diration::ChangeParameters, this, _1));
-  node->declare_parameter("kernel_size", 3);
-  node->declare_parameter("iteration_count", 1);
+  node->declare_parameter("kernel_size", 3, param_desc_);
+  node->declare_parameter("iteration_count", 1, param_desc_);
 }
 
 Diration::~Diration() {
@@ -147,8 +147,8 @@ Erosion::Erosion(rclcpp::Node* node)
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&Erosion::ChangeParameters, this, _1));
-  node->declare_parameter("kernel_size", 3);
-  node->declare_parameter("iteration_count", 1);
+  node->declare_parameter("kernel_size", 3, param_desc_);
+  node->declare_parameter("iteration_count", 1, param_desc_);
 }
 
 Erosion::~Erosion() {
@@ -198,9 +198,9 @@ CannyEdge::CannyEdge(rclcpp::Node* node)
       val_min_(50),
       sobel_aperture_(3) {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&CannyEdge::ChangeParameters, this, _1));
-  node->declare_parameter("val_max", 100);
-  node->declare_parameter("val_min", 50);
-  node->declare_parameter("sobel_aperture", 3);
+  node->declare_parameter("val_max", 100, param_desc_);
+  node->declare_parameter("val_min", 50, param_desc_);
+  node->declare_parameter("sobel_aperture", 3, param_desc_);
 }
 
 CannyEdge::~CannyEdge() {
