@@ -32,8 +32,8 @@ ComponentManager::ComponentManager(
         {"plugin_name", "topic_tools::RelayNode"},
         {"namespace", "/image_proc_chain/io"},
         {"name", "input"},
-        {"input_topic", "/image_proc_chain/io/input_image"},
-        {"output_topic", "/image_proc_chain/pieces/no_0/input_image"}
+        {"input_topic", "/image_proc_chain/io/image_in"},
+        {"output_topic", "/image_proc_chain/pieces/no_0/image_in"}
       }
     },
     {
@@ -42,8 +42,8 @@ ComponentManager::ComponentManager(
         {"plugin_name", "topic_tools::RelayNode"},
         {"namespace", "/image_proc_chain/io"},
         {"name", "output"},
-        {"input_topic", "/image_proc_chain/pieces/no_0/input_image"},
-        {"output_topic", "/image_proc_chain/io/output_image"}
+        {"input_topic", "/image_proc_chain/pieces/no_0/image_in"},
+        {"output_topic", "/image_proc_chain/io/image_out"}
       }
     }
   };
@@ -89,7 +89,7 @@ void ComponentManager::ChangeChainNum(
   using ComponentInfo = std::map<std::string, uint64_t>;
   ComponentInfo all_component_info;
   for (size_t i = 0; i < all_component_num; ++i) {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
         this->get_logger(),
         "[%ld]: %s 0x%lx",
         i,
@@ -98,7 +98,7 @@ void ComponentManager::ChangeChainNum(
     all_component_info.insert({lres->full_node_names[i], lres->unique_ids[i]});
   }
 
-  // IOに関する部分は無視する
+  // IOに関する部分は無視するためにフィルター
   ComponentInfo component_info_without_io;
   std::copy_if(
       all_component_info.begin(),
@@ -144,10 +144,22 @@ void ComponentManager::ChangeChainNum(
       req->package_name = "image_proc_chain";
       req->plugin_name = "image_proc_chain::ChainPiece";
       req->node_namespace = "/image_proc_chain/pieces";
-      const uint32_t abs_idx = base_num + i;
-      req->node_name = std::string("no_") + std::to_string(abs_idx);
-      // req->log_level = rcl_interfaces::msg::Log::INFO;
       req->log_level = static_cast<uint8_t>(20);  // INFO
+      const uint32_t abs_idx = base_num + i;
+      const std::string node_name = std::string("no_") + std::to_string(abs_idx);
+      req->node_name = node_name;
+      // 二個目以降の実体化の際は，以前の出力を入力とするようにトピックをリマップする
+      if (abs_idx != 0) {
+        const std::string prev_node_name = std::string("no_") + std::to_string(abs_idx-1);
+        const std::string full_node_name = req->node_namespace + std::string("/") + node_name;
+        const std::string full_prev_node_name = req->node_namespace + std::string("/") + prev_node_name;
+        const std::string topic_name = full_node_name + "/image_in";
+        const std::string prev_topic_name = full_prev_node_name + "/image_out";
+        const std::string remap_rule = topic_name + std::string(":=") + prev_topic_name;
+        RCLCPP_INFO(this->get_logger(), "remap rule-> %s", remap_rule.c_str());
+        req->remap_rules.push_back(remap_rule);
+      }
+      // req->log_level = rcl_interfaces::msg::Log::INFO;
       this->on_load_node(h, req, res);
       if (!res->success) {
         RCLCPP_ERROR(this->get_logger(), "Failed to load %s", req->node_name.c_str());
@@ -177,14 +189,16 @@ void ComponentManager::ChangeChainNum(
         response->successful = res->success;
         return;
       }
-      RCLCPP_INFO(this->get_logger(), "Unload 0x%lx", req->unique_id);
+      RCLCPP_INFO(this->get_logger(), "Unload %s 0x%lx", it->first.c_str(), req->unique_id);
       if (++tried_num == try_num) {
         break;
       }
     }
   }
 
-  // validate the consitency of message chain
+  // このまで処理が進んでいる場合は，処理器の数が変化しているので，
+  // 最終的な出力ノードに接続するトピックも変わっている
+  // それを合わせる必要がある
 
   response->successful = true;
 }
