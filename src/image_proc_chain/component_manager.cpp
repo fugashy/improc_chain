@@ -22,6 +22,53 @@ ComponentManager::ComponentManager(
   srv_ = this->create_service<image_proc_chain_msgs::srv::ChangeChainNum>(
       "~/change_length",
       std::bind(&ComponentManager::ChangeChainNum, this, _1, _2, _3));
+  // instantiate IO node
+  using IoParamType = std::map<std::string, std::map<std::string, std::string>>;
+  const IoParamType io_param = {
+    {
+      "input", {
+        {"package", "topic_tools"},
+        {"plugin_name", "topic_tools::RelayNode"},
+        {"namespace", "/image_proc_chain/io"},
+        {"name", "input"},
+        {"input_topic", "/image_proc_chain/io/input_image"},
+        {"output_topic", "/image_proc_chain/pieces/no_0/input_image"}
+      }
+    },
+    {
+      "output", {
+        {"package", "topic_tools"},
+        {"plugin_name", "topic_tools::RelayNode"},
+        {"namespace", "/image_proc_chain/io"},
+        {"name", "output"},
+        {"input_topic", "/image_proc_chain/pieces/no_0/input_image"},
+        {"output_topic", "/image_proc_chain/io/output_image"}
+      }
+    }
+  };
+  for (IoParamType::const_iterator it = io_param.begin(); it != io_param.end(); ++it) {
+    std::shared_ptr<rmw_request_id_t> h;
+    std::shared_ptr<LoadNode::Request> req(new LoadNode::Request());
+    std::shared_ptr<LoadNode::Response> res(new LoadNode::Response());
+    req->package_name = it->second.at("package");
+    req->plugin_name = it->second.at("plugin_name");
+    req->node_namespace = it->second.at("namespace");
+    req->node_name = it->second.at("name");;
+    for (const auto& e : {"input_topic", "output_topic"}) {
+      auto p = rcl_interfaces::msg::Parameter();
+      p.name = e;
+      p.value.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+      p.value.string_value = it->second.at(e);
+      req->parameters.push_back(p);
+    }
+    req->log_level = static_cast<uint8_t>(20);  // INFO
+    this->on_load_node(h, req, res);
+    if (!res->success) {
+      RCLCPP_FATAL(this->get_logger(), "Failed to load %s", req->node_name.c_str());
+      throw std::runtime_error("Failed instantiate IO");
+    }
+  }
+
   RCLCPP_INFO(this->get_logger(), "Manager has initialized");
 }
 
@@ -49,6 +96,13 @@ void ComponentManager::ChangeChainNum(
     component_num = static_cast<int>(node_names.size());
   }
 
+  for (uint32_t i = 0; i < component_num; ++i) {
+    RCLCPP_INFO(this->get_logger(), "[%d]: %s 0x%lx", i, node_names[i].c_str(), unique_ids[i]);
+  }
+
+  response->successful = true;
+  return;
+
   // 同じ数なら何もしなくて良い
   if (request->num == component_num) {
     RCLCPP_INFO(
@@ -56,10 +110,6 @@ void ComponentManager::ChangeChainNum(
         "Requested number is the same as current configuration. We ignore this request.");
     response->successful = true;
     return;
-  }
-
-  for (uint32_t i = 0; i < component_num; ++i) {
-    RCLCPP_DEBUG(this->get_logger(), "[%d]: %s 0x%lx", i, node_names[i].c_str(), unique_ids[i]);
   }
 
   // 足りないなら増やすし，多い場合は減らす
