@@ -12,20 +12,11 @@ using std::placeholders::_2;
 using std::placeholders::_3;
 
 
-namespace image_proc_chain {
-
-ComponentManager::ComponentManager(
-      std::weak_ptr<rclcpp::Executor> executor,
-      std::string node_name,
-      const rclcpp::NodeOptions& options)
-    : rclcpp_components::ComponentManager(executor, std::move(node_name), options) {
-  srv_ = this->create_service<image_proc_chain_msgs::srv::ChangeChainNum>(
-      "~/change_length",
-      std::bind(&ComponentManager::ChangeChainNum, this, _1, _2, _3));
-
-  // instantiate IO node
-  using IoParamType = std::map<std::string, std::map<std::string, std::string>>;
-  const IoParamType io_param = {
+namespace {
+using StringKeyStringValue = std::map<std::string, std::string>;
+using IoParamType = std::map<std::string, StringKeyStringValue>;
+IoParamType GetIoParameter() {
+  return {
     {
       "input", {
         {"package", "topic_tools"},
@@ -47,25 +38,71 @@ ComponentManager::ComponentManager(
       }
     }
   };
-  for (IoParamType::const_iterator it = io_param.begin(); it != io_param.end(); ++it) {
-    std::shared_ptr<rmw_request_id_t> h;
-    std::shared_ptr<LoadNode::Request> req(new LoadNode::Request());
-    std::shared_ptr<LoadNode::Response> res(new LoadNode::Response());
-    req->package_name = it->second.at("package");
-    req->plugin_name = it->second.at("plugin_name");
-    req->node_namespace = it->second.at("namespace");
-    req->node_name = it->second.at("name");;
+}
+
+using composition_interfaces::srv::LoadNode;
+
+struct LoadNodeQuery {
+ public:
+  std::shared_ptr<rmw_request_id_t> header;
+  std::shared_ptr<LoadNode::Request> request;
+
+  explicit LoadNodeQuery(const StringKeyStringValue& param)
+      : header(new rmw_request_id_t()),
+        request(new LoadNode::Request()) {
+    request->package_name = param.at("package");
+    request->plugin_name = param.at("plugin_name");
+    request->node_namespace = param.at("namespace");
+    request->node_name = param.at("name");;
+
     for (const auto& e : {"input_topic", "output_topic"}) {
       auto p = rcl_interfaces::msg::Parameter();
       p.name = e;
       p.value.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
-      p.value.string_value = it->second.at(e);
-      req->parameters.push_back(p);
+      p.value.string_value = param.at(e);
+      request->parameters.push_back(p);
     }
-    req->log_level = static_cast<uint8_t>(20);  // INFO
-    this->on_load_node(h, req, res);
+
+    request->log_level = static_cast<uint8_t>(20);  // INFO
+  }
+};
+
+
+StringKeyStringValue GetIoFullNodeName() {
+  const auto io_param = GetIoParameter();
+  std::map<std::string, std::string> out;
+  for (auto it = io_param.begin(); it != io_param.end(); ++it) {
+    out.insert({
+        it->first,
+        it->second.at("namespace") + std::string("/") + it->second.at("name")
+        });
+  }
+  return out;
+}
+
+}  // end of anonymous namespace
+
+
+namespace image_proc_chain {
+
+
+ComponentManager::ComponentManager(
+      std::weak_ptr<rclcpp::Executor> executor,
+      std::string node_name,
+      const rclcpp::NodeOptions& options)
+    : rclcpp_components::ComponentManager(executor, std::move(node_name), options) {
+  srv_ = this->create_service<image_proc_chain_msgs::srv::ChangeChainNum>(
+      "~/change_length",
+      std::bind(&ComponentManager::ChangeChainNum, this, _1, _2, _3));
+
+  // instantiate IO node
+  const auto io_param = GetIoParameter();
+  for (IoParamType::const_iterator it = io_param.begin(); it != io_param.end(); ++it) {
+    const auto query = LoadNodeQuery(it->second);
+    std::shared_ptr<LoadNode::Response> res(new LoadNode::Response());
+    this->on_load_node(query.header, query.request, res);
     if (!res->success) {
-      RCLCPP_FATAL(this->get_logger(), "Failed to load %s", req->node_name.c_str());
+      RCLCPP_FATAL(this->get_logger(), "Failed to load %s", query.request->node_name.c_str());
       throw std::runtime_error("Failed instantiate IO");
     }
   }
@@ -105,9 +142,10 @@ void ComponentManager::ChangeChainNum(
       all_component_info.end(),
       std::inserter(component_info_without_io, component_info_without_io.end()),
       [](const std::pair<std::string, uint64_t> pair) {
-        const bool not_input = pair.first != "/image_proc_chain/io/input";
-        const bool not_output = pair.first != "/image_proc_chain/io/output";
-        return  not_input && not_output; });
+        const bool not_input = pair.first != GetIoFullNodeName().at("input");
+        const bool not_output = pair.first != GetIoFullNodeName().at("output");
+        return  not_input && not_output;
+        });
   for (
       ComponentInfo::const_iterator it = component_info_without_io.begin();
       it != component_info_without_io.end();
