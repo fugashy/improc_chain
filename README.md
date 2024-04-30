@@ -15,8 +15,7 @@ image_proc_chain has a ros service that can change length of the chain_piece.
 
 # Develop environment
 
-- OS: MacOS Catalina 10.15
-- ROS2 foxy
+- ROS2 humble
 
 # Overview
 
@@ -34,38 +33,37 @@ image_proc_chain has a ros service that can change length of the chain_piece.
 
 # How to use
 
-- As single chained image processor
+## Build this packages with dependencies
 
 ```bash
-ros2 run image_proc_chain image_proc_chain image_proc_chain_chain_piece_node /chain_piece/image_in:=/your_image_topic_name
+mkdir ~/ipc_ws/src -p
+cd ~/ipc_ws/src
+git clone -b feature/humble https://github.com/fugashy/image_proc_chain.git
+git clone https://github.com/fugashy/image_proc_chain_msgs.git
+cd ~/ipc_ws
+source /opt/ros/humble/setup.bash
+colcon build --symlink-install
 ```
 
-Switching command is
+## Run
 
 ```bash
-ros2 service call /chain_piece/switch_processor_type image_proc_chain/srv/SwitchProcessorType "'type': 'canny_edge'"
+cd ~/ipc_ws
+source install/setup.bash
+ros2 launch image_proc_chain image_proc_chain.launch.py
 ```
 
-- As chained image processor
+## Change length of the chain
 
 ```bash
-ros2 run image_proc_chain_chain_processor_node /camera/image_raw:=/your_image_topic_name
+cd ~/ipc_ws
+source install/setup.bash
+ros2 service call /image_proc_chain/component_container/change_length image_proc_chain_msgs/srv/ChangeChainNum "{num: 3}"
 ```
 
-Switching command is
+## Change type of image processors
 
-```bash
-ros2 service call /chain_piece_N/switch_processor_type image_proc_chain/srv/SwitchProcessorType "'type': 'canny_edge'"
-```
-
-N represents the number of chain piece.
-
-Command of changing num is
-
-```bash
-ros2 service call /chain_processor/change_chain_num image_proc_chain/srv/ChangeChainNum "num: 4"
-```
-
+T.B.D
 
 # Lisence
 
