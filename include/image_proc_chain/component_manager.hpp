@@ -24,6 +24,8 @@ class ComponentManager : public rclcpp_components::ComponentManager {
       const std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Request> request,
       std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Response> response);
 
+  bool ExtendLength(const uint32_t base_idx, const uint32_t additional_length);
+
   rclcpp::Service<image_proc_chain_msgs::srv::ChangeChainNum>::SharedPtr srv_;
 };
 

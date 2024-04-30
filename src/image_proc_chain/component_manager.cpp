@@ -42,12 +42,12 @@ IoParamType GetIoParameter() {
 
 using composition_interfaces::srv::LoadNode;
 
-struct LoadNodeQuery {
+struct LoadIoNodeQuery {
  public:
   std::shared_ptr<rmw_request_id_t> header;
   std::shared_ptr<LoadNode::Request> request;
 
-  explicit LoadNodeQuery(const StringKeyStringValue& param)
+  explicit LoadIoNodeQuery(const StringKeyStringValue& param)
       : header(new rmw_request_id_t()),
         request(new LoadNode::Request()) {
     request->package_name = param.at("package");
@@ -98,7 +98,7 @@ ComponentManager::ComponentManager(
   // instantiate IO node
   const auto io_param = GetIoParameter();
   for (IoParamType::const_iterator it = io_param.begin(); it != io_param.end(); ++it) {
-    const auto query = LoadNodeQuery(it->second);
+    const auto query = LoadIoNodeQuery(it->second);
     std::shared_ptr<LoadNode::Response> res(new LoadNode::Response());
     this->on_load_node(query.header, query.request, res);
     if (!res->success) {
@@ -169,43 +169,17 @@ void ComponentManager::ChangeChainNum(
   }
 
   // 足りないなら増やすし，多い場合は減らす
-  const uint32_t& base_num = component_num;
-  RCLCPP_INFO(this->get_logger(), "base num: %d", base_num);
+  const uint32_t& base_idx = component_num;
+  RCLCPP_DEBUG(this->get_logger(), "base num: %d", base_idx);
   const int difference_num = request->num - component_num;
-  RCLCPP_INFO(this->get_logger(), "diff num: %d", difference_num);
+  RCLCPP_DEBUG(this->get_logger(), "diff num: %d", difference_num);
   if (difference_num > 0) {
     const uint32_t try_num = difference_num;
-    for (uint32_t i = 0; i < try_num; ++i) {
-      std::shared_ptr<rmw_request_id_t> h;
-      std::shared_ptr<LoadNode::Request> req(new LoadNode::Request());
-      std::shared_ptr<LoadNode::Response> res(new LoadNode::Response());
-      req->package_name = "image_proc_chain";
-      req->plugin_name = "image_proc_chain::ChainPiece";
-      req->node_namespace = "/image_proc_chain/pieces";
-      req->log_level = static_cast<uint8_t>(20);  // INFO
-      const uint32_t abs_idx = base_num + i;
-      const std::string node_name = std::string("no_") + std::to_string(abs_idx);
-      req->node_name = node_name;
-      // 二個目以降の実体化の際は，以前の出力を入力とするようにトピックをリマップする
-      if (abs_idx != 0) {
-        const std::string prev_node_name = std::string("no_") + std::to_string(abs_idx-1);
-        const std::string full_node_name = req->node_namespace + std::string("/") + node_name;
-        const std::string full_prev_node_name = req->node_namespace + std::string("/") + prev_node_name;
-        const std::string topic_name = full_node_name + "/image_in";
-        const std::string prev_topic_name = full_prev_node_name + "/image_out";
-        const std::string remap_rule = topic_name + std::string(":=") + prev_topic_name;
-        RCLCPP_INFO(this->get_logger(), "remap rule-> %s", remap_rule.c_str());
-        req->remap_rules.push_back(remap_rule);
-      }
-      // req->log_level = rcl_interfaces::msg::Log::INFO;
-      this->on_load_node(h, req, res);
-      if (!res->success) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to load %s", req->node_name.c_str());
-        response->successful = res->success;
-        return;
-      }
+    if (!this->ExtendLength(base_idx, try_num)) {
+      response->successful = false;
+      return;
     }
-  } else if (request->num < component_num) {
+  } else if (difference_num < 0) {
     const uint32_t try_num = std::abs(difference_num);
     uint32_t tried_num = 0;
     for (
@@ -239,6 +213,39 @@ void ComponentManager::ChangeChainNum(
   // それを合わせる必要がある
 
   response->successful = true;
+}
+
+bool ComponentManager::ExtendLength(const uint32_t base_idx, const uint32_t additional_length) {
+  for (uint32_t i = 0; i < additional_length; ++i) {
+    std::shared_ptr<rmw_request_id_t> h;
+    std::shared_ptr<LoadNode::Request> req(new LoadNode::Request());
+    std::shared_ptr<LoadNode::Response> res(new LoadNode::Response());
+    req->package_name = "image_proc_chain";
+    req->plugin_name = "image_proc_chain::ChainPiece";
+    req->node_namespace = "/image_proc_chain/pieces";
+    req->log_level = static_cast<uint8_t>(20);  // INFO
+    // req->log_level = rcl_interfaces::msg::Log::INFO;
+    const uint32_t abs_idx = base_idx + i;
+    const std::string node_name = std::string("no_") + std::to_string(abs_idx);
+    req->node_name = node_name;
+    // 二個目以降の実体化の際は，以前の出力を入力とするようにトピックをリマップする
+    if (abs_idx != 0) {
+      const std::string prev_node_name = std::string("no_") + std::to_string(abs_idx-1);
+      const std::string full_node_name = req->node_namespace + std::string("/") + node_name;
+      const std::string full_prev_node_name = req->node_namespace + std::string("/") + prev_node_name;
+      const std::string topic_name = full_node_name + "/image_in";
+      const std::string prev_topic_name = full_prev_node_name + "/image_out";
+      const std::string remap_rule = topic_name + std::string(":=") + prev_topic_name;
+      RCLCPP_INFO(this->get_logger(), "remap rule-> %s", remap_rule.c_str());
+      req->remap_rules.push_back(remap_rule);
+    }
+    this->on_load_node(h, req, res);
+    if (!res->success) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to load %s", req->node_name.c_str());
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // end of namespace image_proc_chain
