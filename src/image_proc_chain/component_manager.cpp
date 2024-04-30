@@ -22,6 +22,7 @@ ComponentManager::ComponentManager(
   srv_ = this->create_service<image_proc_chain_msgs::srv::ChangeChainNum>(
       "~/change_length",
       std::bind(&ComponentManager::ChangeChainNum, this, _1, _2, _3));
+
   // instantiate IO node
   using IoParamType = std::map<std::string, std::map<std::string, std::string>>;
   const IoParamType io_param = {
@@ -80,28 +81,45 @@ void ComponentManager::ChangeChainNum(
   RCLCPP_INFO(this->get_logger(), "Service has called with num: %d", request->num);
 
   // 管理しているchainの数を得て，仕事する必要があるかどうかを判断する
-  std::vector<std::string> node_names;
-  std::vector<uint64_t> unique_ids;
-  uint32_t component_num = 0;
   std::shared_ptr<rmw_request_id_t> lh;
   std::shared_ptr<ListNodes::Request> lreq(new ListNodes::Request());
   std::shared_ptr<ListNodes::Response> lres(new ListNodes::Response());
   this->on_list_nodes(lh, lreq, lres);
-  if (lres == nullptr) {
-    RCLCPP_INFO(this->get_logger(), "No components are working");
-    component_num = 0;
-  } else {
-    node_names = lres->full_node_names;
-    unique_ids = lres->unique_ids;
-    component_num = static_cast<int>(node_names.size());
+  const uint32_t all_component_num = static_cast<int>(lres->full_node_names.size());
+  using ComponentInfo = std::map<std::string, uint64_t>;
+  ComponentInfo all_component_info;
+  for (size_t i = 0; i < all_component_num; ++i) {
+    RCLCPP_INFO(
+        this->get_logger(),
+        "[%ld]: %s 0x%lx",
+        i,
+        lres->full_node_names[i].c_str(),
+        lres->unique_ids[i]);
+    all_component_info.insert({lres->full_node_names[i], lres->unique_ids[i]});
   }
 
-  for (uint32_t i = 0; i < component_num; ++i) {
-    RCLCPP_INFO(this->get_logger(), "[%d]: %s 0x%lx", i, node_names[i].c_str(), unique_ids[i]);
+  // IOに関する部分は無視する
+  ComponentInfo component_info_without_io;
+  std::copy_if(
+      all_component_info.begin(),
+      all_component_info.end(),
+      std::inserter(component_info_without_io, component_info_without_io.end()),
+      [](const std::pair<std::string, uint64_t> pair) {
+        const bool not_input = pair.first != "/image_proc_chain/io/input";
+        const bool not_output = pair.first != "/image_proc_chain/io/output";
+        return  not_input && not_output; });
+  for (
+      ComponentInfo::const_iterator it = component_info_without_io.begin();
+      it != component_info_without_io.end();
+      ++it) {
+    RCLCPP_INFO(
+        this->get_logger(),
+        "target component: %s 0x%lx",
+        it->first.c_str(),
+        it->second);
   }
 
-  response->successful = true;
-  return;
+  const uint32_t component_num = component_info_without_io.size();
 
   // 同じ数なら何もしなくて良い
   if (request->num == component_num) {
@@ -114,7 +132,9 @@ void ComponentManager::ChangeChainNum(
 
   // 足りないなら増やすし，多い場合は減らす
   const uint32_t& base_num = component_num;
+  RCLCPP_INFO(this->get_logger(), "base num: %d", base_num);
   const int difference_num = request->num - component_num;
+  RCLCPP_INFO(this->get_logger(), "diff num: %d", difference_num);
   if (difference_num > 0) {
     const uint32_t try_num = difference_num;
     for (uint32_t i = 0; i < try_num; ++i) {
@@ -138,17 +158,20 @@ void ComponentManager::ChangeChainNum(
   } else if (request->num < component_num) {
     const uint32_t try_num = std::abs(difference_num);
     uint32_t tried_num = 0;
-    std::reverse(unique_ids.begin(), unique_ids.end());
-    for (const auto& e : unique_ids) {
+    for (
+        auto it = component_info_without_io.rbegin();
+        it != component_info_without_io.rend();
+        ++it) {
       std::shared_ptr<rmw_request_id_t> h;
       std::shared_ptr<UnloadNode::Request> req(new UnloadNode::Request());
-      req->unique_id = e;
+      req->unique_id = it->second;
       std::shared_ptr<UnloadNode::Response> res(new UnloadNode::Response());
       this->on_unload_node(h, req, res);
       if (!res->success) {
         RCLCPP_ERROR(
             this->get_logger(),
-            "Failed to unload id: 0x%lx: %s",
+            "Failed to unload %s: 0x%lx: %s",
+            it->first.c_str(),
             req->unique_id,
             res->error_message.c_str());
         response->successful = res->success;
