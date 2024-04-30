@@ -6,6 +6,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/component_manager.hpp>
 
+using ComponentIdByName = std::map<std::string, uint64_t>;
+
 namespace image_proc_chain {
 
 class ComponentManager : public rclcpp_components::ComponentManager {
@@ -24,8 +26,9 @@ class ComponentManager : public rclcpp_components::ComponentManager {
       const std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Request> request,
       std::shared_ptr<image_proc_chain_msgs::srv::ChangeChainNum::Response> response);
 
+
+  ComponentIdByName GetCurrentComponentInfo();
   bool ExtendLength(const uint32_t base_idx, const uint32_t additional_length);
-  using ComponentIdByName = std::map<std::string, uint64_t>;
   bool ReduceLength(const ComponentIdByName& component_info, const uint32_t reduced_length);
 
   rclcpp::Service<image_proc_chain_msgs::srv::ChangeChainNum>::SharedPtr srv_;

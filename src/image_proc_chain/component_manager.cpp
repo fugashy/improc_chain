@@ -80,6 +80,13 @@ StringKeyStringValue GetIoFullNodeName() {
   return out;
 }
 
+
+ComponentIdByName Filter(const ComponentIdByName& in, const std::function<bool(const std::pair<std::string, uint64_t>&)>& filter_func) {
+  ComponentIdByName out;
+  std::copy_if(in.begin(), in.end(), std::inserter(out, out.end()), filter_func);
+  return out;
+}
+
 }  // end of anonymous namespace
 
 
@@ -117,44 +124,17 @@ void ComponentManager::ChangeChainNum(
   (void)request_header;
   RCLCPP_INFO(this->get_logger(), "Service has called with num: %d", request->num);
 
-  // 管理しているchainの数を得て，仕事する必要があるかどうかを判断する
-  std::shared_ptr<rmw_request_id_t> lh;
-  std::shared_ptr<ListNodes::Request> lreq(new ListNodes::Request());
-  std::shared_ptr<ListNodes::Response> lres(new ListNodes::Response());
-  this->on_list_nodes(lh, lreq, lres);
-  const uint32_t all_component_num = static_cast<int>(lres->full_node_names.size());
-  ComponentIdByName all_component_info;
-  for (size_t i = 0; i < all_component_num; ++i) {
-    RCLCPP_DEBUG(
-        this->get_logger(),
-        "[%ld]: %s 0x%lx",
-        i,
-        lres->full_node_names[i].c_str(),
-        lres->unique_ids[i]);
-    all_component_info.insert({lres->full_node_names[i], lres->unique_ids[i]});
-  }
+  // 管理しているchainの数を得て，仕事する必要があるかどうかを判断していく
+  const auto all_component_info = GetCurrentComponentInfo();;
 
   // IOに関する部分は無視するためにフィルター
-  ComponentIdByName component_info_without_io;
-  std::copy_if(
-      all_component_info.begin(),
-      all_component_info.end(),
-      std::inserter(component_info_without_io, component_info_without_io.end()),
+  const ComponentIdByName component_info_without_io = Filter(
+      all_component_info,
       [](const std::pair<std::string, uint64_t> pair) {
         const bool not_input = pair.first != GetIoFullNodeName().at("input");
         const bool not_output = pair.first != GetIoFullNodeName().at("output");
         return  not_input && not_output;
         });
-  for (
-      ComponentIdByName::const_iterator it = component_info_without_io.begin();
-      it != component_info_without_io.end();
-      ++it) {
-    RCLCPP_INFO(
-        this->get_logger(),
-        "target component: %s 0x%lx",
-        it->first.c_str(),
-        it->second);
-  }
 
   const uint32_t component_num = component_info_without_io.size();
 
@@ -191,6 +171,27 @@ void ComponentManager::ChangeChainNum(
   // それを合わせる必要がある
 
   response->successful = true;
+}
+
+
+ComponentIdByName ComponentManager::GetCurrentComponentInfo() {
+  std::shared_ptr<rmw_request_id_t> lh;
+  std::shared_ptr<ListNodes::Request> lreq(new ListNodes::Request());
+  std::shared_ptr<ListNodes::Response> lres(new ListNodes::Response());
+  this->on_list_nodes(lh, lreq, lres);
+  const uint32_t all_component_num = static_cast<int>(lres->full_node_names.size());
+  ComponentIdByName all_component_info;
+  for (size_t i = 0; i < all_component_num; ++i) {
+    RCLCPP_DEBUG(
+        this->get_logger(),
+        "[%ld]: %s 0x%lx",
+        i,
+        lres->full_node_names[i].c_str(),
+        lres->unique_ids[i]);
+    all_component_info.insert({lres->full_node_names[i], lres->unique_ids[i]});
+  }
+
+  return all_component_info;
 }
 
 bool ComponentManager::ExtendLength(const uint32_t base_idx, const uint32_t additional_length) {
