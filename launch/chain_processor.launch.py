@@ -14,7 +14,7 @@ def generate_launch_description():
             description='Number of image processor(chain_piece)'),
         launch_ros.actions.Node(
             package=_PKG_NAME,
-            node_executable=_PKG_NAME+'_chain_processor_node',
-            node_name='chain_processor',
+            executable=_PKG_NAME+'_chain_processor_node',
+            name='chain_processor',
             output='screen',
             parameters=[{'chain_num': chain_num}])])

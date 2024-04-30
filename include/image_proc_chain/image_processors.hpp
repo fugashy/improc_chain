@@ -23,7 +23,7 @@ class Base {
    *
    * @param[in] node Pointer to node
    */
-  explicit Base(std::shared_ptr<rclcpp::Node>& node);
+  explicit Base(rclcpp::Node* node);
 
   /**
    * @brief Default destructor
@@ -47,7 +47,7 @@ class Base {
    *
    * Used to get/set parameter, for logging
    */
-  std::shared_ptr<rclcpp::Node> node_;
+  rclcpp::Node* node_;
 
   /**
    * @brief Pointer to a handlaer that manage parameter callbacks
@@ -67,7 +67,7 @@ class GaussianSpacial : public Base {
    *
    * @param[in] node Pointer to node
    */
-  explicit GaussianSpacial(std::shared_ptr<rclcpp::Node>& node);
+  explicit GaussianSpacial(rclcpp::Node* node);
 
   /**
    * @brief Declare parameters
@@ -124,7 +124,7 @@ class Diration : public Base {
    *
    * @param[in] node Pointer to node
    */
-  explicit Diration(std::shared_ptr<rclcpp::Node>& node);
+  explicit Diration(rclcpp::Node* node);
 
   /**
    * @brief Declare parameters
@@ -175,7 +175,7 @@ class Erosion : public Base {
    *
    * @param[in] node Pointer to node
    */
-  explicit Erosion(rclcpp::Node::SharedPtr& node);
+  explicit Erosion(rclcpp::Node* node);
 
   /**
    * @brief Declare parameters
@@ -226,7 +226,7 @@ class CannyEdge : public Base {
    *
    * @param[in] node Pointer to node
    */
-  explicit CannyEdge(rclcpp::Node::SharedPtr& node);
+  explicit CannyEdge(rclcpp::Node* node);
 
   /**
    * @brief Declare parameters
@@ -285,7 +285,7 @@ bool IsAvailable(const std::string& type_name);
  *
  * @return Pointer to base class
  */
-Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node);
+Base::SharedPtr Create(rclcpp::Node* node);
 
 }  // namespace image_processors
 }  // namespace image_proc_chain

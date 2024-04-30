@@ -16,6 +16,7 @@ find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(image_proc_chain_msgs REQUIRED)
@@ -25,39 +26,30 @@ include_directories(
   include
 )
 
-add_library(${PROJECT_NAME}_core
-  src/${PROJECT_NAME}/chain_processor.cpp
-  src/${PROJECT_NAME}/flexible_chain_executor.cpp
+add_library(${PROJECT_NAME}
+# src/${PROJECT_NAME}/chain_processor.cpp
+# src/${PROJECT_NAME}/flexible_chain_executor.cpp
   src/${PROJECT_NAME}/chain_piece.cpp
   src/${PROJECT_NAME}/image_processors.cpp
   src/${PROJECT_NAME}/switchable_image_processor.cpp
 )
-ament_target_dependencies(${PROJECT_NAME}_core
+ament_target_dependencies(${PROJECT_NAME}
   cv_bridge
   image_transport
   message_filters
   rclcpp
+  rclcpp_components
   sensor_msgs
   image_proc_chain_msgs
 )
+rclcpp_components_register_nodes(
+  ${PROJECT_NAME}
+  "image_proc_chain::ChainPiece")
 
-
-add_executable(${PROJECT_NAME}_chain_piece_node
-  src/${PROJECT_NAME}/chain_piece_node.cpp
-)
-target_link_libraries(${PROJECT_NAME}_chain_piece_node
-  ${PROJECT_NAME}_core
-)
-add_executable(${PROJECT_NAME}_chain_processor_node
-  src/${PROJECT_NAME}/chain_processor_node.cpp
-)
-target_link_libraries(${PROJECT_NAME}_chain_processor_node
-  ${PROJECT_NAME}_core
-)
 
 # install libraries
 install(TARGETS
-    ${PROJECT_NAME}_core
+    ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -67,12 +59,9 @@ install(TARGETS
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}/
 )
-
-# install executables
-install(TARGETS
-    ${PROJECT_NAME}_chain_piece_node
-    ${PROJECT_NAME}_chain_processor_node
-    DESTINATION lib/${PROJECT_NAME}
+install(
+  DIRECTORY include/
+  DESTINATION include
 )
 
 # get_default_rmw_implementation(rmw_implementation)

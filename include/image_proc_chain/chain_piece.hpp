@@ -11,7 +11,7 @@
 
 namespace image_proc_chain {
 
-class ChainPiece {
+class ChainPiece : public rclcpp::Node {
  public:
   /**
    * Alias to std::shared_ptr
@@ -21,12 +21,10 @@ class ChainPiece {
   /**
    * @brief Build pub/sub and initialize SwitchableImageProcessor
    *
-   * @param[in] node Shared pointer to node
+   * @param[in] Pointer to node
    * @param[in] in_topic_name Name of image topic to input
    **/
-  explicit ChainPiece(
-      std::shared_ptr<rclcpp::Node> node,
-      const std::string& in_topic_name = "/camera/image_raw");
+  explicit ChainPiece(const rclcpp::NodeOptions& options);
 
  private:
 
@@ -41,13 +39,6 @@ class ChainPiece {
    * @param msg Image topic
    */
   void Process(const sensor_msgs::msg::Image::SharedPtr msg);
-
-  /**
-   * @brief Pointer to node
-   *
-   * Used for logging
-   */
-  std::shared_ptr<rclcpp::Node> node_;
 
   /**
    * @brief Pointer to image processor that can be switch the type of processor

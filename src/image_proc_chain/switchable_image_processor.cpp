@@ -9,7 +9,7 @@ using std::placeholders::_3;
 
 namespace image_proc_chain {
 
-SwitchableImageProcessor::SwitchableImageProcessor(rclcpp::Node::SharedPtr node) : node_(node) {
+SwitchableImageProcessor::SwitchableImageProcessor(rclcpp::Node* node) : node_(node) {
   image_processor_ = image_processors::Create(node_);
 
   srv_ = node_->create_service<image_proc_chain_msgs::srv::SwitchProcessorType>(

@@ -17,7 +17,7 @@ class ChainProcessor {
    *
    * @param[in] node Pointer to node
    */
-  explicit ChainProcessor(rclcpp::Node::SharedPtr& node);
+  explicit ChainProcessor(rclcpp::Node* node);
 
   /**
    * @brief Undeclare parameters
@@ -53,7 +53,7 @@ class ChainProcessor {
   /**
    * @brief Pointer to node
    */
-  rclcpp::Node::SharedPtr node_;
+  rclcpp::Node* node_;
 
   /**
    * @brief Pointer to FlexibleChainExecutor

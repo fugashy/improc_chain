@@ -16,11 +16,11 @@ namespace image_proc_chain {
 namespace image_processors {
 
 
-Base::Base(std::shared_ptr<rclcpp::Node>& node) : node_(node) {}
+Base::Base(rclcpp::Node* node) : node_(node) {}
 
 const char GaussianSpacial::ProcName[] = "gaussian_spacial";
 
-GaussianSpacial::GaussianSpacial(std::shared_ptr<rclcpp::Node>& node)
+GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
     : Base(node),
       kernel_(cv::Size(21, 21)),
       sigma_(cv::Vec2d(1.0, 1.0)),
@@ -91,7 +91,7 @@ rcl_interfaces::msg::SetParametersResult GaussianSpacial::ChangeParameters(
 
 const char Diration::ProcName[] = "diration";
 
-Diration::Diration(std::shared_ptr<rclcpp::Node>& node)
+Diration::Diration(rclcpp::Node* node)
     : Base(node),
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
@@ -141,7 +141,7 @@ rcl_interfaces::msg::SetParametersResult Diration::ChangeParameters(
 
 const char Erosion::ProcName[] = "erosion";
 
-Erosion::Erosion(rclcpp::Node::SharedPtr& node)
+Erosion::Erosion(rclcpp::Node* node)
     : Base(node),
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
@@ -191,7 +191,7 @@ rcl_interfaces::msg::SetParametersResult Erosion::ChangeParameters(
 
 const char CannyEdge::ProcName[] = "canny_edge";
 
-CannyEdge::CannyEdge(rclcpp::Node::SharedPtr& node)
+CannyEdge::CannyEdge(rclcpp::Node* node)
     : Base(node),
       val_max_(100),
       val_min_(50),
@@ -282,7 +282,7 @@ bool IsAvailable(const std::string& type_name) {
   return is_available;
 }
 
-Base::SharedPtr Create(std::shared_ptr<rclcpp::Node> node) {
+Base::SharedPtr Create(rclcpp::Node* node) {
   std::string type_str;
   rclcpp::Parameter type;
   if (!node->get_parameter("type", type)) {

@@ -9,7 +9,7 @@ using std::placeholders::_3;
 
 namespace image_proc_chain {
 
-ChainProcessor::ChainProcessor(rclcpp::Node::SharedPtr& node) : node_(node) {
+ChainProcessor::ChainProcessor(rclcpp::Node* node) : node_(node) {
   int chain_num = 3;
   node_->declare_parameter("chain_num", chain_num);
 

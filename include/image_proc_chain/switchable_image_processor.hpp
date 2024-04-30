@@ -21,7 +21,7 @@ class SwitchableImageProcessor {
    *
    * @param[in] node Pointer to node
    */
-  explicit SwitchableImageProcessor(rclcpp::Node::SharedPtr node);
+  explicit SwitchableImageProcessor(rclcpp::Node* node);
 
   /**
    * @brief Process image by using image_processors::Base
@@ -48,9 +48,9 @@ class SwitchableImageProcessor {
       std::shared_ptr<image_proc_chain_msgs::srv::SwitchProcessorType::Response> response);
 
   /**
-   * @brief Pointer to noe
+   * @brief Pointer to node
    */
-  rclcpp::Node::SharedPtr node_;
+  rclcpp::Node* node_;
 
   /**
    * @brief Pointer to image processor
