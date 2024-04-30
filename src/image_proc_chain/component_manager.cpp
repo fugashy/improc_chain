@@ -41,6 +41,7 @@ IoParamType GetIoParameter() {
 }
 
 using composition_interfaces::srv::LoadNode;
+using composition_interfaces::srv::UnloadNode;
 
 struct LoadIoNodeQuery {
  public:
@@ -65,6 +66,19 @@ struct LoadIoNodeQuery {
 
     request->log_level = static_cast<uint8_t>(20);  // INFO
   }
+};
+
+
+struct UnloadNodeQuery {
+ public:
+  explicit UnloadNodeQuery(const uint64_t id)
+      : header(new rmw_request_id_t()),
+        request(new UnloadNode::Request()) {
+    request->unique_id = id;
+  }
+
+  std::shared_ptr<rmw_request_id_t> header;
+  std::shared_ptr<UnloadNode::Request> request;
 };
 
 
@@ -169,6 +183,41 @@ void ComponentManager::ChangeChainNum(
   // このまで処理が進んでいる場合は，処理器の数が変化しているので，
   // 最終的な出力ノードに接続するトピックも変わっている
   // それを合わせる必要がある
+  const auto current_components = GetCurrentComponentInfo();
+  // 出力のみを取り出し
+  const auto output_component = Filter(
+      current_components,
+      [](const std::pair<std::string, uint64_t> pair) {
+        return pair.first == GetIoFullNodeName().at("output");
+        });
+  // ここでエラーになられると，少なくとも出力トピックにメッセージが流れなくなるので対応が必要
+  if (output_component.empty()) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to find output node");
+    response->successful = false;
+    return;
+  }
+  // 出力ノードを一旦unloadして，入力トピックをリマップしたものをloadする
+  const uint64_t& output_component_id = output_component.begin()->second;
+  const auto unload_query = UnloadNodeQuery(output_component_id);
+  std::shared_ptr<UnloadNode::Response> unload_response(new UnloadNode::Response());;
+  this->on_unload_node(unload_query.header, unload_query.request, unload_response);
+  StringKeyStringValue output_param = GetIoParameter().at("output");
+
+  // following code block to be more cooler
+  const int current_node_num = current_components.size() - 3;
+  if (current_node_num >= 0) {
+    output_param["input_topic"] = std::string("/image_proc_chain/pieces/no_") + std::to_string(current_node_num) + std::string("/image_out");
+  } else {
+    output_param["input_topic"] = std::string("/image_proc_chain/io/image_in");
+  }
+  const auto load_query = LoadIoNodeQuery(output_param);
+  std::shared_ptr<LoadNode::Response> load_response(new LoadNode::Response());
+  this->on_load_node(load_query.header, load_query.request, load_response);
+  if (!load_response->success) {
+    RCLCPP_FATAL(this->get_logger(), "Failed to load %s", load_query.request->node_name.c_str());
+    response->successful = false;
+    throw std::runtime_error("Failed instantiate output");
+  }
 
   response->successful = true;
 }
@@ -235,21 +284,23 @@ bool ComponentManager::ReduceLength(
       auto it = component_info.rbegin();
       it != component_info.rend();
       ++it) {
-    std::shared_ptr<rmw_request_id_t> h;
-    std::shared_ptr<UnloadNode::Request> req(new UnloadNode::Request());
-    req->unique_id = it->second;
     std::shared_ptr<UnloadNode::Response> res(new UnloadNode::Response());
-    this->on_unload_node(h, req, res);
+    const auto query = UnloadNodeQuery(it->second);
+    this->on_unload_node(query.header, query.request, res);
     if (!res->success) {
       RCLCPP_ERROR(
           this->get_logger(),
           "Failed to unload %s: 0x%lx: %s",
           it->first.c_str(),
-          req->unique_id,
+          query.request->unique_id,
           res->error_message.c_str());
       return false;
     }
-    RCLCPP_INFO(this->get_logger(), "Unload %s 0x%lx", it->first.c_str(), req->unique_id);
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Unload %s 0x%lx",
+        it->first.c_str(),
+        query.request->unique_id);
     if (++tried_num == reduced_length) {
       break;
     }
