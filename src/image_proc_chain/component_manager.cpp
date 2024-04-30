@@ -123,8 +123,7 @@ void ComponentManager::ChangeChainNum(
   std::shared_ptr<ListNodes::Response> lres(new ListNodes::Response());
   this->on_list_nodes(lh, lreq, lres);
   const uint32_t all_component_num = static_cast<int>(lres->full_node_names.size());
-  using ComponentInfo = std::map<std::string, uint64_t>;
-  ComponentInfo all_component_info;
+  ComponentIdByName all_component_info;
   for (size_t i = 0; i < all_component_num; ++i) {
     RCLCPP_DEBUG(
         this->get_logger(),
@@ -136,7 +135,7 @@ void ComponentManager::ChangeChainNum(
   }
 
   // IOに関する部分は無視するためにフィルター
-  ComponentInfo component_info_without_io;
+  ComponentIdByName component_info_without_io;
   std::copy_if(
       all_component_info.begin(),
       all_component_info.end(),
@@ -147,7 +146,7 @@ void ComponentManager::ChangeChainNum(
         return  not_input && not_output;
         });
   for (
-      ComponentInfo::const_iterator it = component_info_without_io.begin();
+      ComponentIdByName::const_iterator it = component_info_without_io.begin();
       it != component_info_without_io.end();
       ++it) {
     RCLCPP_INFO(
@@ -181,30 +180,9 @@ void ComponentManager::ChangeChainNum(
     }
   } else if (difference_num < 0) {
     const uint32_t try_num = std::abs(difference_num);
-    uint32_t tried_num = 0;
-    for (
-        auto it = component_info_without_io.rbegin();
-        it != component_info_without_io.rend();
-        ++it) {
-      std::shared_ptr<rmw_request_id_t> h;
-      std::shared_ptr<UnloadNode::Request> req(new UnloadNode::Request());
-      req->unique_id = it->second;
-      std::shared_ptr<UnloadNode::Response> res(new UnloadNode::Response());
-      this->on_unload_node(h, req, res);
-      if (!res->success) {
-        RCLCPP_ERROR(
-            this->get_logger(),
-            "Failed to unload %s: 0x%lx: %s",
-            it->first.c_str(),
-            req->unique_id,
-            res->error_message.c_str());
-        response->successful = res->success;
-        return;
-      }
-      RCLCPP_INFO(this->get_logger(), "Unload %s 0x%lx", it->first.c_str(), req->unique_id);
-      if (++tried_num == try_num) {
-        break;
-      }
+    if (!this->ReduceLength(component_info_without_io, try_num)) {
+      response->successful = false;
+      return;
     }
   }
 
@@ -243,6 +221,36 @@ bool ComponentManager::ExtendLength(const uint32_t base_idx, const uint32_t addi
     if (!res->success) {
       RCLCPP_ERROR(this->get_logger(), "Failed to load %s", req->node_name.c_str());
       return false;
+    }
+  }
+  return true;
+}
+
+
+bool ComponentManager::ReduceLength(
+    const ComponentIdByName& component_info, const uint32_t reduced_length) {
+  uint32_t tried_num = 0;
+  for (
+      auto it = component_info.rbegin();
+      it != component_info.rend();
+      ++it) {
+    std::shared_ptr<rmw_request_id_t> h;
+    std::shared_ptr<UnloadNode::Request> req(new UnloadNode::Request());
+    req->unique_id = it->second;
+    std::shared_ptr<UnloadNode::Response> res(new UnloadNode::Response());
+    this->on_unload_node(h, req, res);
+    if (!res->success) {
+      RCLCPP_ERROR(
+          this->get_logger(),
+          "Failed to unload %s: 0x%lx: %s",
+          it->first.c_str(),
+          req->unique_id,
+          res->error_message.c_str());
+      return false;
+    }
+    RCLCPP_INFO(this->get_logger(), "Unload %s 0x%lx", it->first.c_str(), req->unique_id);
+    if (++tried_num == reduced_length) {
+      break;
     }
   }
   return true;
