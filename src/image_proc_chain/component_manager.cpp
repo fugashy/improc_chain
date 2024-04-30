@@ -35,7 +35,7 @@ void ComponentManager::ChangeChainNum(
   // 管理しているchainの数を得て，仕事する必要があるかどうかを判断する
   std::vector<std::string> node_names;
   std::vector<uint64_t> unique_ids;
-  int component_num = 0;
+  uint32_t component_num = 0;
   std::shared_ptr<rmw_request_id_t> lh;
   std::shared_ptr<ListNodes::Request> lreq(new ListNodes::Request());
   std::shared_ptr<ListNodes::Response> lres(new ListNodes::Response());
@@ -58,23 +58,24 @@ void ComponentManager::ChangeChainNum(
     return;
   }
 
-  for (int i = 0; i < component_num; ++i) {
-    RCLCPP_INFO(this->get_logger(), "[%d]: %s 0x%lx", i, node_names[i].c_str(), unique_ids[i]);
+  for (uint32_t i = 0; i < component_num; ++i) {
+    RCLCPP_DEBUG(this->get_logger(), "[%d]: %s 0x%lx", i, node_names[i].c_str(), unique_ids[i]);
   }
 
   // 足りないなら増やすし，多い場合は減らす
-  const int& base_num = component_num;
+  const uint32_t& base_num = component_num;
   const int difference_num = request->num - component_num;
   if (difference_num > 0) {
-    const int try_num = difference_num;
-    for (int i = 0; i < try_num; ++i) {
+    const uint32_t try_num = difference_num;
+    for (uint32_t i = 0; i < try_num; ++i) {
       std::shared_ptr<rmw_request_id_t> h;
       std::shared_ptr<LoadNode::Request> req(new LoadNode::Request());
       std::shared_ptr<LoadNode::Response> res(new LoadNode::Response());
       req->package_name = "image_proc_chain";
       req->plugin_name = "image_proc_chain::ChainPiece";
       req->node_namespace = "/image_proc_chain/pieces";
-      req->node_name = std::string("no_") + std::to_string(base_num + i);
+      const uint32_t abs_idx = base_num + i;
+      req->node_name = std::string("no_") + std::to_string(abs_idx);
       // req->log_level = rcl_interfaces::msg::Log::INFO;
       req->log_level = static_cast<uint8_t>(20);  // INFO
       this->on_load_node(h, req, res);
@@ -85,8 +86,8 @@ void ComponentManager::ChangeChainNum(
       }
     }
   } else if (request->num < component_num) {
-    const int try_num = std::abs(difference_num);
-    int tried_num = 0;
+    const uint32_t try_num = std::abs(difference_num);
+    uint32_t tried_num = 0;
     std::reverse(unique_ids.begin(), unique_ids.end());
     for (const auto& e : unique_ids) {
       std::shared_ptr<rmw_request_id_t> h;
@@ -108,8 +109,9 @@ void ComponentManager::ChangeChainNum(
         break;
       }
     }
-
   }
+
+  // validate the consitency of message chain
 
   response->successful = true;
 }
