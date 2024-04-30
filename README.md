@@ -63,7 +63,13 @@ ros2 service call /image_proc_chain/component_container/change_length image_proc
 
 ## Change type of image processors
 
-T.B.D
+Switch the type from gaussian to erosion
+
+```bash
+cd ~/ipc_ws
+source install/setup.bash
+ros2 service call /image_proc_chain/pieces/no_1/switch_processor_type image_proc_chain_msgs/srv/SwitchProcessorType "type: 'erosion'"
+```
 
 # Lisence
 
