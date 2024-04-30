@@ -5,8 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "opencv2/core.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <opencv2/core.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rcl_interfaces/msg/parameter_descriptor.hpp>
 
 namespace image_proc_chain {
 namespace image_processors {
@@ -53,6 +54,7 @@ class Base {
    * @brief Pointer to a handlaer that manage parameter callbacks
    */
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_handler_;
+  rcl_interfaces::msg::ParameterDescriptor param_desc_;
 };
 
 class GaussianSpacial : public Base {

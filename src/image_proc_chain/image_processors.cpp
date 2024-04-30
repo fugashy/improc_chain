@@ -5,9 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "opencv2/imgproc.hpp"
-
-#include "image_proc_chain/image_processors.hpp"
+#include <image_proc_chain/image_processors.hpp>
+#include <opencv2/imgproc.hpp>
 
 
 using std::placeholders::_1;
@@ -16,7 +15,9 @@ namespace image_proc_chain {
 namespace image_processors {
 
 
-Base::Base(rclcpp::Node* node) : node_(node) {}
+Base::Base(rclcpp::Node* node) : node_(node) {
+  param_desc_.dynamic_typing = true;
+}
 
 const char GaussianSpacial::ProcName[] = "gaussian_spacial";
 
@@ -26,11 +27,11 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
       sigma_(cv::Vec2d(1.0, 1.0)),
       iteration_count_(1)  {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&GaussianSpacial::ChangeParameters, this, _1));
-  node->declare_parameter("kernel_x", 21);
-  node->declare_parameter("kernel_y", 21);
-  node->declare_parameter("sigma_x", 1.0);
-  node->declare_parameter("sigma_y", 1.0);
-  node->declare_parameter("iteration_count", 1);
+  node->declare_parameter("kernel_x", 21, param_desc_);
+  node->declare_parameter("kernel_y", 21, param_desc_);
+  node->declare_parameter("sigma_x", 1.0, param_desc_);
+  node->declare_parameter("sigma_y", 1.0, param_desc_);
+  node->declare_parameter("iteration_count", 1, param_desc_);
 }
 
 GaussianSpacial::~GaussianSpacial() {

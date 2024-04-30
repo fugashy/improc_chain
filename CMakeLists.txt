@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(image_proc_chain)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # we dont use add_compile_options with pedantic in message packages
@@ -27,8 +27,6 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
-# src/${PROJECT_NAME}/chain_processor.cpp
-# src/${PROJECT_NAME}/flexible_chain_executor.cpp
   src/${PROJECT_NAME}/chain_piece.cpp
   src/${PROJECT_NAME}/image_processors.cpp
   src/${PROJECT_NAME}/switchable_image_processor.cpp
@@ -46,13 +44,28 @@ rclcpp_components_register_nodes(
   ${PROJECT_NAME}
   "image_proc_chain::ChainPiece")
 
+add_executable(${PROJECT_NAME}_component_container
+  src/${PROJECT_NAME}/component_container.cpp
+  src/${PROJECT_NAME}/component_manager.cpp)
+ament_target_dependencies(${PROJECT_NAME}_component_container
+  rclcpp
+  rclcpp_components
+  image_proc_chain_msgs
+)
+
 
 # install libraries
 install(TARGETS
     ${PROJECT_NAME}
+    ${PROJECT_NAME}_component_container
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+# install executables
+install(TARGETS
+    ${PROJECT_NAME}_component_container
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 #install other files
