@@ -71,6 +71,13 @@ source install/setup.bash
 ros2 service call /image_proc_chain/pieces/no_1/switch_processor_type image_proc_chain_msgs/srv/SwitchProcessorType "type: 'erosion'"
 ```
 
+# Dockerfile
+
+```bash
+docker build -t ipc:humble .
+docker run -it --rm ipc:humble ros2 launch image_proc_chain image_proc_chain.launch.py
+```
+
 # Lisence
 
 Under 3-claused BSD lisence.
