@@ -11,7 +11,7 @@ run apt-get update && \
     ros-$ROS_DISTRO-topic-tools
 
 workdir /opt/ipc/src
-run git clone --depth=1 https://github.com/fugashy/image_proc_chain.git
+copy . /opt/ipc/src/image_proc_chain/
 run git clone --depth=1 https://github.com/fugashy/image_proc_chain_msgs.git
 workdir /opt/ipc
 run bash -c "source /opt/ros/humble/setup.bash && colcon build --symlink-install"
