@@ -7,6 +7,9 @@
 
 #include <image_proc_chain/image_processors.hpp>
 #include <opencv2/imgproc.hpp>
+#include <rcl_interfaces/msg/parameter_descriptor.hpp>
+#include <rcl_interfaces/msg/floating_point_range.hpp>
+#include <rcl_interfaces/msg/integer_range.hpp>
 
 
 using std::placeholders::_1;
@@ -15,9 +18,7 @@ namespace image_proc_chain {
 namespace image_processors {
 
 
-Base::Base(rclcpp::Node* node) : node_(node) {
-  param_desc_.dynamic_typing = true;
-}
+Base::Base(rclcpp::Node* node) : node_(node) {}
 
 const char GaussianSpacial::ProcName[] = "gaussian_spacial";
 
@@ -27,11 +28,106 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
       sigma_(cv::Vec2d(1.0, 1.0)),
       iteration_count_(1)  {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&GaussianSpacial::ChangeParameters, this, _1));
-  node->declare_parameter("kernel_x", 21, param_desc_);
-  node->declare_parameter("kernel_y", 21, param_desc_);
-  node->declare_parameter("sigma_x", 1.0, param_desc_);
-  node->declare_parameter("sigma_y", 1.0, param_desc_);
-  node->declare_parameter("iteration_count", 1, param_desc_);
+  node->declare_parameter(
+      "kernel_x",
+      21,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("kernel_x")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The size of kernel in x axis")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(101)
+                .step(2)
+            })));
+  node->declare_parameter(
+      "kernel_y",
+      21,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("kernel_y")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The size of kernel in y axis")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(101)
+                .step(2)
+            })));
+  node->declare_parameter(
+      "sigma_x",
+      1.0,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("signal_x")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE)
+        .description("The signal of gaussian in x axis")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::FloatingPointRange>()
+                .from_value(1.0)
+                .to_value(100.0)
+                .step(0.001)
+            }))
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>()));
+  node->declare_parameter(
+      "sigma_y",
+      1.0,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("signal_y")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE)
+        .description("The signal of gaussian in y axis")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::FloatingPointRange>()
+                .from_value(1.0)
+                .to_value(100.0)
+                .step(0.001)
+            }))
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>()));
+  node->declare_parameter(
+      "iteration_count",
+      1,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("iteration_count")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The number of iteration of this filter")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(100)
+                .step(1)
+            })));
 }
 
 GaussianSpacial::~GaussianSpacial() {
@@ -97,8 +193,46 @@ Diration::Diration(rclcpp::Node* node)
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&Diration::ChangeParameters, this, _1));
-  node->declare_parameter("kernel_size", 3, param_desc_);
-  node->declare_parameter("iteration_count", 1, param_desc_);
+  node->declare_parameter(
+      "kernel_size",
+      3,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("kernal_zie")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The size of kernel")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(100)
+                .step(1)
+            })));
+  node->declare_parameter(
+      "iteration_count",
+      1,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("iteration_count")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The number of iteration of this filter")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(100)
+                .step(1)
+            })));
 }
 
 Diration::~Diration() {
@@ -147,8 +281,46 @@ Erosion::Erosion(rclcpp::Node* node)
       kernel_(cv::Mat::ones(3, 3, CV_8UC1)),
       iteration_count_(1) {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&Erosion::ChangeParameters, this, _1));
-  node->declare_parameter("kernel_size", 3, param_desc_);
-  node->declare_parameter("iteration_count", 1, param_desc_);
+  node->declare_parameter(
+      "kernel_size",
+      3,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("kernal_zie")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The size of kernel")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(100)
+                .step(1)
+            })));
+  node->declare_parameter(
+      "iteration_count",
+      1,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("iteration_count")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The number of iteration of this filter")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(100)
+                .step(1)
+            })));
 }
 
 Erosion::~Erosion() {
@@ -198,9 +370,66 @@ CannyEdge::CannyEdge(rclcpp::Node* node)
       val_min_(50),
       sobel_aperture_(3) {
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&CannyEdge::ChangeParameters, this, _1));
-  node->declare_parameter("val_max", 100, param_desc_);
-  node->declare_parameter("val_min", 50, param_desc_);
-  node->declare_parameter("sobel_aperture", 3, param_desc_);
+  node->declare_parameter(
+      "val_max",
+      100,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("val_max")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The max value of filter")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(2)
+                .to_value(255)
+                .step(1)
+            })));
+  node->declare_parameter(
+      "val_min",
+      50,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("val_min")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The min value of filter")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(1)
+                .to_value(254)
+                .step(1)
+            })));
+  node->declare_parameter(
+      "sobel_aperture",
+      3,
+      rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
+        .name("val_min")
+        .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
+        .description("The min value of filter")
+        .additional_constraints("")
+        .read_only(false)
+        .dynamic_typing(false)
+        .floating_point_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
+        .integer_range(
+          rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::IntegerRange, 1>(
+            {
+              rcl_interfaces::build<rcl_interfaces::msg::IntegerRange>()
+                .from_value(3)
+                .to_value(7)
+                .step(2)
+            })));
 }
 
 CannyEdge::~CannyEdge() {
@@ -224,42 +453,36 @@ cv::Mat CannyEdge::Process(const cv::Mat& image_in) {
 rcl_interfaces::msg::SetParametersResult CannyEdge::ChangeParameters(
     const std::vector<rclcpp::Parameter>& params) {
   auto result = rcl_interfaces::msg::SetParametersResult();
-  result.successful = true;
+  result.successful = false;
 
-  int val_max, val_min;
   for (auto param : params) {
     if (param.get_name() == "val_max") {
-      val_max = param.as_int();
-      if (val_max < 1) {
-        RCLCPP_WARN(node_->get_logger(), "val_max should be greater than 0");
-        result.successful = false;
+      const int v = param.as_int();
+      if (v <= val_min_) {
+        RCLCPP_WARN(
+            node_->get_logger(),
+            "val_max should be greater than val_min(%d)",
+            val_min_);
+        continue;
       }
+      val_max_ = v;
+      result.successful = true;
     }
     if (param.get_name() == "val_min") {
-      val_min = param.as_int();
-      if (val_min < 1) {
-        RCLCPP_WARN(node_->get_logger(), "val_min should be greater than 0");
-        result.successful = false;
+      const int v = param.as_int();
+      if (v >= val_max_) {
+        RCLCPP_WARN(
+            node_->get_logger(),
+            "val_min should be smaller than val_max(%d)",
+            val_max_);
+        continue;
       }
+      val_min_ = v;
+      result.successful = true;
     }
     if (param.get_name() == "sobel_aperture") {
-      const int sobel_aperture = param.as_int();
-      if (sobel_aperture < 3 || 7 < sobel_aperture) {
-        RCLCPP_WARN(node_->get_logger(), "sobel_aperture should be in range of 3 and 7");
-        result.successful = false;
-      } else {
-        sobel_aperture_ = sobel_aperture;
-      }
+      sobel_aperture_ = param.as_int();
     }
-  }
-
-  if (val_max <= val_min) {
-    RCLCPP_WARN(
-        node_->get_logger(), "val_max(%d) should be greater than val_min(%d)", val_max, val_min);
-    result.successful = false;
-  } else {
-    val_max_ = val_max;
-    val_min_ = val_min;
   }
 
   return result;

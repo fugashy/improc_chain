@@ -54,7 +54,6 @@ class Base {
    * @brief Pointer to a handlaer that manage parameter callbacks
    */
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_handler_;
-  rcl_interfaces::msg::ParameterDescriptor param_desc_;
 };
 
 class GaussianSpacial : public Base {
