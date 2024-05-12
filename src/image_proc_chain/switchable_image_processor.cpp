@@ -1,6 +1,10 @@
 // Copyright 2019 fugashy
 #include <memory>
 
+#include <rcl_interfaces/msg/parameter_descriptor.hpp>
+#include <rcl_interfaces/msg/floating_point_range.hpp>
+#include <rcl_interfaces/msg/integer_range.hpp>
+
 #include "image_proc_chain/switchable_image_processor.hpp"
 
 using std::placeholders::_1;
@@ -30,23 +34,9 @@ void SwitchableImageProcessor::SwitchTypeOfProcessor(
 
   RCLCPP_INFO(node_->get_logger(), "Switch service has called(req: %s)", request->type.c_str());
 
-  if (!image_processors::IsAvailable(request->type)) {
-    RCLCPP_WARN(node_->get_logger(), "%s is not available", request->type.c_str());
-    response->successful = false;
-    return;
-  }
-
-  try {
-    node_->declare_parameter("type", request->type);
-  } catch (rclcpp::exceptions::ParameterAlreadyDeclaredException& e) {
-    rclcpp::Parameter type("type", request->type);
-    node_->set_parameter(type);
-  }
-  try {
-    image_processor_.reset();
-    image_processor_ = image_processors::Create(node_);
-  } catch (const std::exception& e) {
-    RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
+  image_processor_.reset();
+  image_processor_ = image_processors::Create(node_, request->type);
+  if (image_processor_ == nullptr) {
     response->successful = false;
     return;
   }

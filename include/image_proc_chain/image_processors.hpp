@@ -283,10 +283,11 @@ bool IsAvailable(const std::string& type_name);
  * @brief Factory function to create inherited classes of Base
  *
  * @param[in] node Pointer to node
+ * @param[in] type Type name of processor
  *
  * @return Pointer to base class
  */
-Base::SharedPtr Create(rclcpp::Node* node);
+Base::SharedPtr Create(rclcpp::Node* node, const std::string& type="");
 
 }  // namespace image_processors
 }  // namespace image_proc_chain

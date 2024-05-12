@@ -37,7 +37,7 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
         .description("The size of kernel in x axis")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -57,7 +57,7 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
         .description("The size of kernel in y axis")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -77,7 +77,7 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
         .description("The signal of gaussian in x axis")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>(
             {
@@ -97,7 +97,7 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
         .description("The signal of gaussian in y axis")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>(
             {
@@ -117,7 +117,7 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
         .description("The number of iteration of this filter")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -202,7 +202,7 @@ Diration::Diration(rclcpp::Node* node)
         .description("The size of kernel")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -222,7 +222,7 @@ Diration::Diration(rclcpp::Node* node)
         .description("The number of iteration of this filter")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -290,7 +290,7 @@ Erosion::Erosion(rclcpp::Node* node)
         .description("The size of kernel")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -310,7 +310,7 @@ Erosion::Erosion(rclcpp::Node* node)
         .description("The number of iteration of this filter")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -372,14 +372,14 @@ CannyEdge::CannyEdge(rclcpp::Node* node)
   param_handler_ = node->add_on_set_parameters_callback(std::bind(&CannyEdge::ChangeParameters, this, _1));
   node->declare_parameter(
       "val_max",
-      100,
+      static_cast<int>(val_max_),
       rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
         .name("val_max")
         .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
         .description("The max value of filter")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -392,14 +392,14 @@ CannyEdge::CannyEdge(rclcpp::Node* node)
             })));
   node->declare_parameter(
       "val_min",
-      50,
+      static_cast<int>(val_min_),
       rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
         .name("val_min")
         .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
         .description("The min value of filter")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -410,7 +410,6 @@ CannyEdge::CannyEdge(rclcpp::Node* node)
                 .to_value(254)
                 .step(1)
             })));
-  RCLCPP_ERROR(node->get_logger(), "try to declare sobel_aperture");
   node->declare_parameter(
       "sobel_aperture",
       static_cast<int>(sobel_aperture_),
@@ -420,7 +419,7 @@ CannyEdge::CannyEdge(rclcpp::Node* node)
         .description("The size of sobel aperture")
         .additional_constraints("")
         .read_only(false)
-        .dynamic_typing(false)
+        .dynamic_typing(true)
         .floating_point_range(
           rosidl_runtime_cpp::BoundedVector<rcl_interfaces::msg::FloatingPointRange, 1>())
         .integer_range(
@@ -509,27 +508,28 @@ bool IsAvailable(const std::string& type_name) {
   return is_available;
 }
 
-Base::SharedPtr Create(rclcpp::Node* node) {
-  std::string type_str;
-  rclcpp::Parameter type;
-  if (!node->get_parameter("type", type)) {
-    RCLCPP_WARN(node->get_logger(), "Failed to get type, we use default type gaussian_spacial");
-    type_str = GaussianSpacial::ProcName;
+Base::SharedPtr Create(rclcpp::Node* node, const std::string& type) {
+  std::string type_to_create;
+  if (!IsAvailable(type)) {
+    RCLCPP_WARN(
+        node->get_logger(),
+        "No type is specified. We create default type gaussian_spacial");
+    type_to_create = GaussianSpacial::ProcName;
   } else {
-    type_str = type.as_string();
+    type_to_create = type;
   }
 
   Base::SharedPtr ptr;
-  if (type_str == GaussianSpacial::ProcName) {
+  if (type_to_create == GaussianSpacial::ProcName) {
     ptr.reset(new GaussianSpacial(node));
-  } else if (type_str == Diration::ProcName) {
+  } else if (type_to_create == Diration::ProcName) {
     ptr.reset(new Diration(node));
-  } else if (type_str == Erosion::ProcName) {
+  } else if (type_to_create == Erosion::ProcName) {
     ptr.reset(new Erosion(node));
-  } else if (type_str == CannyEdge::ProcName) {
+  } else if (type_to_create == CannyEdge::ProcName) {
     ptr.reset(new CannyEdge(node));
   } else {
-    RCLCPP_ERROR(node->get_logger(), "%s is not implemented", type_str.c_str());
+    RCLCPP_ERROR(node->get_logger(), "%s is not implemented", type_to_create.c_str());
   }
 
   return ptr;
