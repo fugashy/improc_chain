@@ -410,13 +410,14 @@ CannyEdge::CannyEdge(rclcpp::Node* node)
                 .to_value(254)
                 .step(1)
             })));
+  RCLCPP_ERROR(node->get_logger(), "try to declare sobel_aperture");
   node->declare_parameter(
       "sobel_aperture",
-      3,
+      static_cast<int>(sobel_aperture_),
       rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
-        .name("val_min")
+        .name("sobel_aperture")
         .type(rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER)
-        .description("The min value of filter")
+        .description("The size of sobel aperture")
         .additional_constraints("")
         .read_only(false)
         .dynamic_typing(false)
@@ -454,10 +455,11 @@ rcl_interfaces::msg::SetParametersResult CannyEdge::ChangeParameters(
     const std::vector<rclcpp::Parameter>& params) {
   auto result = rcl_interfaces::msg::SetParametersResult();
   result.successful = false;
+  RCLCPP_DEBUG(node_->get_logger(), "Parameter event has called");
 
   for (auto param : params) {
     if (param.get_name() == "val_max") {
-      const int v = param.as_int();
+      const uint32_t v = static_cast<uint32_t>(param.as_int());
       if (v <= val_min_) {
         RCLCPP_WARN(
             node_->get_logger(),
@@ -469,7 +471,7 @@ rcl_interfaces::msg::SetParametersResult CannyEdge::ChangeParameters(
       result.successful = true;
     }
     if (param.get_name() == "val_min") {
-      const int v = param.as_int();
+      const uint32_t v = static_cast<uint32_t>(param.as_int());
       if (v >= val_max_) {
         RCLCPP_WARN(
             node_->get_logger(),
@@ -482,6 +484,7 @@ rcl_interfaces::msg::SetParametersResult CannyEdge::ChangeParameters(
     }
     if (param.get_name() == "sobel_aperture") {
       sobel_aperture_ = param.as_int();
+      result.successful = true;
     }
   }
 
