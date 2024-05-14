@@ -72,9 +72,9 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
       "sigma_x",
       1.0,
       rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
-        .name("signal_x")
+        .name("sigma_x")
         .type(rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE)
-        .description("The signal of gaussian in x axis")
+        .description("The sigma of gaussian in x axis")
         .additional_constraints("")
         .read_only(false)
         .dynamic_typing(true)
@@ -92,9 +92,9 @@ GaussianSpacial::GaussianSpacial(rclcpp::Node* node)
       "sigma_y",
       1.0,
       rcl_interfaces::build<rcl_interfaces::msg::ParameterDescriptor>()
-        .name("signal_y")
+        .name("sigma_y")
         .type(rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE)
-        .description("The signal of gaussian in y axis")
+        .description("The sigma of gaussian in y axis")
         .additional_constraints("")
         .read_only(false)
         .dynamic_typing(true)
